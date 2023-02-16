@@ -8,6 +8,7 @@
     - [Infrastructure deployed](#infrastructure-deployed)
     - [Diagrams](#diagrams)
         - [LOGICAL DIAGRAM](#logical-diagram)
+        - [CONCEPT DIAGRAM](#concept-diagram)
   - [Class Notes](#class-notes)
     - [Intro](#intro)
     - [Instructors](#instructors)
@@ -57,8 +58,16 @@
 > Link to [Lucid](https://lucid.app/lucidchart/655e59e3-0047-4852-b2b5-1a672064f39d/edit?viewport_loc=-186%2C90%2C2000%2C1194%2C0_0&invitationId=inv_6157e264-be79-461e-a5d7-a6dffc5524b3)
 
 <p align="center">
-  <img src="../_docs/assets/week0/cruddur-logical-diagram.png" width="80%">
+  <img src="./assets/week0/cruddur-logical-diagram.png" width="80%">
 </p>
+
+##### CONCEPT DIAGRAM
+> Link to [Lucid](https://lucid.app/lucidchart/d8286efd-b2db-49c2-a6ac-63f4a0045780/edit?viewport_loc=-715%2C-127%2C4137%2C1479%2C0_0&invitationId=inv_e33cd10b-5114-4e80-9901-c784154ce8dd)
+
+<p align="center">
+  <img src="./assets/week0/cruddur-concept-diagram.png" width="80%">
+</p>
+
 
 ## Class Notes
 ### Intro
