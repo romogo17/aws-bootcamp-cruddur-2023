@@ -57,7 +57,7 @@
 > Link to [Lucid](https://lucid.app/lucidchart/655e59e3-0047-4852-b2b5-1a672064f39d/edit?viewport_loc=-186%2C90%2C2000%2C1194%2C0_0&invitationId=inv_6157e264-be79-461e-a5d7-a6dffc5524b3)
 
 <p align="center">
-  <img src="../_docs/assets/week0/cruddur-logica-diagram.png" width="80%">
+  <img src="../_docs/assets/week0/cruddur-logical-diagram.png" width="80%">
 </p>
 
 ## Class Notes
