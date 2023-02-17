@@ -1,14 +1,18 @@
 # Week 0 — Billing and Architecture
 
 - [Week 0 — Billing and Architecture](#week-0--billing-and-architecture)
-  - [Homework](#homework)
-    - [Root Account Setup](#root-account-setup)
-    - [Initial IAM setup](#initial-iam-setup)
-    - [Terraform prep-work](#terraform-prep-work)
-    - [Infrastructure deployed](#infrastructure-deployed)
+  - [Required Homework](#required-homework)
     - [Diagrams](#diagrams)
-        - [LOGICAL DIAGRAM](#logical-diagram)
         - [CONCEPT DIAGRAM](#concept-diagram)
+        - [LOGICAL DIAGRAM](#logical-diagram)
+    - [IAM users](#iam-users)
+    - [CloudShell](#cloudshell)
+    - [AWS CLI](#aws-cli)
+    - [Billing Alarm](#billing-alarm)
+    - [Budget](#budget)
+  - [Homework Challenges](#homework-challenges)
+    - [Root Account](#root-account)
+    - [Event Bridge Rule for AWS Health events](#event-bridge-rule-for-aws-health-events)
   - [Class Notes](#class-notes)
     - [Intro](#intro)
     - [Instructors](#instructors)
@@ -31,36 +35,9 @@
       - [TOGAF](#togaf)
       - [AWS WELL-ARCHITECTED FRAMEWORK](#aws-well-architected-framework)
 
-## Homework
-
-### Root Account Setup
-* Enabled `Receive Billing Alerts` under the account's Billing Preferences
-* Configured MFA for the root account ✅
-
-### Initial IAM setup
-* Created a IAM user group with the `AdministratorAccess` AWS managed policy attached
-* Created two users, one with just console access, and another one with just API access (to be used with Terraform)
-  * The IAM user for console access also has MFA setup ✅
-  * I created two users because I want to clearly see what was done by terraform and what was done by my user in CloudTrail
-
-### Terraform prep-work
-* Created an S3 bucket and a DynamoDB table
-
-### Infrastructure deployed
-> 📌 **Note**: Terraform code located under [`infrastructure/00-billing-and-budgets`](../infrastructure/00-billing-and-budgets/) and [`infrastructure/01-route53-zone`](../infrastructure/01-route53-zone/)
-* SNS topic for Billing Alarms
-* CloudWatch Alert for Estimated Charges
-* Zero spend budget (actual spend > 0.01)
-* Route53 hosted zone that will be the SOA of my domain's subdomain for `cruddur`
+## Required Homework
 
 ### Diagrams
-##### LOGICAL DIAGRAM
-> Link to [Lucid](https://lucid.app/lucidchart/655e59e3-0047-4852-b2b5-1a672064f39d/edit?viewport_loc=-186%2C90%2C2000%2C1194%2C0_0&invitationId=inv_6157e264-be79-461e-a5d7-a6dffc5524b3)
-
-<p align="center">
-  <img src="./assets/week0/cruddur-logical-diagram.png" width="80%">
-</p>
-
 ##### CONCEPT DIAGRAM
 > Link to [Lucid](https://lucid.app/lucidchart/d8286efd-b2db-49c2-a6ac-63f4a0045780/edit?viewport_loc=-715%2C-127%2C4137%2C1479%2C0_0&invitationId=inv_e33cd10b-5114-4e80-9901-c784154ce8dd)
 
@@ -68,6 +45,74 @@
   <img src="./assets/week0/cruddur-concept-diagram.png" width="80%">
 </p>
 
+##### LOGICAL DIAGRAM
+> Link to [Lucid](https://lucid.app/lucidchart/655e59e3-0047-4852-b2b5-1a672064f39d/edit?viewport_loc=-186%2C90%2C2000%2C1194%2C0_0&invitationId=inv_6157e264-be79-461e-a5d7-a6dffc5524b3)
+
+<p align="center">
+  <img src="./assets/week0/cruddur-logical-diagram.png" width="80%">
+</p>
+
+### IAM users
+* Created a IAM user group with the `AdministratorAccess` AWS managed policy attached
+* Created two users:
+  * one with just console access
+    * this user has MFA setup
+  * one with just API access, to be used with Terraform
+    * I'll be automating everything with Terraform in an attempt to make it to Red Squat 🚀
+    * As seen below, only this user has API credentials generated
+
+> 📌 **Note**: I created two users because I want to clearly see what was done by Terraform and what was done by my user in CloudTrail
+
+![](./assets/week0/iam-users.png)
+
+### CloudShell
+I logged into my account and used CloudShell (last digits blured to prevent exposure)
+
+![](assets/week0/cloudshell.png)
+
+### AWS CLI
+I added the task to get the AWS CLI installed in Gitpod. This was done in [`742023a`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/742023aa3552452a092d48f3d926c5b4d73afc30)
+
+![](assets/week0/aws-cli-gitpod.png)
+
+I already use the `aws` CLI for work, I also have it installed in my workstation (last digits blured to prevent exposure)
+
+![](assets/week0/aws-cli-local.png)
+
+### Billing Alarm
+
+* Created a Billing Alarm whenever the EstimatedCharges >= $25 USD
+* This alarm was created by Terraform. The automation can be found in [`infrastructure/00-billing-budgets-and-health`](../infrastructure/00-billing-budgets-and-health/)
+
+![](assets/week0/billing-alarm.png)
+
+### Budget
+
+* Created a Budget of $2 USD
+* A spend of $1 USD (threshold) will trigger an alert to my email
+* The budget was created by Terraform. The automation can be found in [`infrastructure/00-billing-budgets-and-health`](../infrastructure/00-billing-budgets-and-health/)
+
+![](assets/week0/budget.png)
+
+
+## Homework Challenges
+
+Aside from the challenge tasks, my main challenge during the bootcamp in order to get Red Squad 🚀 will be to automate the deployment of everything through Terraform
+* As a prerequisite, I created an S3 bucket and a DynamoDB table to use the Terraform S3 backend
+* All the terraform code is located under [`infrastructure/`](../infrastructure/). I'll be following the **layering** approach. The first couple layers will have independant foundational automation (billing alerts, SNS topics, DNS, etc.) and most of the actual Cruddur infrastructure will live in it's own layer
+
+### Root Account
+* Enabled `Receive Billing Alerts` under the account's Billing Preferences.
+  * This was a prerequisite to setup Billing Alarms
+* I also configured MFA for the root account, which is part of the homework challenges.
+
+![](assets/week0/root-account-iam.png)
+
+### Event Bridge Rule for AWS Health events
+* Created an Event Bridge Rule to capture AWS Health events and send them to an SNS topic.
+* The target SNS topic has a subscription with my email
+
+![](assets/week0/aws-health-event-rule.png)
 
 ## Class Notes
 ### Intro

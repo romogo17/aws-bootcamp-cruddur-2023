@@ -40,3 +40,32 @@ resource "aws_budgets_budget" "min_spend" {
     subscriber_email_addresses = [var.account_admin_email]
   }
 }
+
+resource "aws_sns_topic" "health_alarms" {
+  name_prefix       = "health-alarms-"
+  kms_master_key_id = "alias/aws/sns"
+}
+
+resource "aws_sns_topic_subscription" "health_alarm_subscription" {
+  topic_arn = aws_sns_topic.health_alarms.arn
+  protocol  = "email"
+  endpoint  = var.account_admin_email
+}
+
+resource "aws_cloudwatch_event_rule" "aws_health" {
+  name        = "capture-aws-health-events"
+  description = "Capture AWS Health Events"
+
+  event_pattern = <<-EOF
+  {
+    "source": ["aws.health"],
+    "detail-type": ["AWS Health Event"]
+  }
+  EOF
+}
+
+resource "aws_cloudwatch_event_target" "sns" {
+  rule      = aws_cloudwatch_event_rule.aws_health.name
+  target_id = "SendToSNS"
+  arn       = aws_sns_topic.health_alarms.arn
+}
