@@ -13,6 +13,7 @@
   - [Homework Challenges](#homework-challenges)
     - [Root Account](#root-account)
     - [Event Bridge Rule for AWS Health events](#event-bridge-rule-for-aws-health-events)
+    - [Well Architected Tool](#well-architected-tool)
   - [Class Notes](#class-notes)
     - [Intro](#intro)
     - [Instructors](#instructors)
@@ -113,6 +114,12 @@ Aside from the challenge tasks, my main challenge during the bootcamp in order t
 * The target SNS topic has a subscription with my email
 
 ![](assets/week0/aws-health-event-rule.png)
+
+### Well Architected Tool
+
+In order to get familiar with the Well Architected Tool, I did an assessment of all the cuestions in the default lens
+
+![](assets/week0/well-architected-tool.png)
 
 ## Class Notes
 ### Intro
