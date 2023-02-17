@@ -14,6 +14,9 @@
     - [Root Account](#root-account)
     - [Event Bridge Rule for AWS Health events](#event-bridge-rule-for-aws-health-events)
     - [Well Architected Tool](#well-architected-tool)
+    - [CI/CD Pipeline Diagram](#cicd-pipeline-diagram)
+    - [Service Quotas](#service-quotas)
+    - [Request a Service Quota Increase](#request-a-service-quota-increase)
   - [Class Notes](#class-notes)
     - [Intro](#intro)
     - [Instructors](#instructors)
@@ -120,6 +123,38 @@ Aside from the challenge tasks, my main challenge during the bootcamp in order t
 In order to get familiar with the Well Architected Tool, I did an assessment of all the cuestions in the default lens
 
 ![](assets/week0/well-architected-tool.png)
+
+
+### CI/CD Pipeline Diagram
+
+> Link to [Lucid](https://lucid.app/lucidchart/1f1074f6-ba12-4210-be0a-1e1c60e84fc2/edit?viewport_loc=-15%2C-151%2C1733%2C1166%2C0_0&invitationId=inv_1884a017-ec77-43e3-8c79-064ca341ddb4)
+
+<p align="center">
+  <img src="./assets/week0/cruddur-ci-cd-pipeline.png" width="80%">
+</p>
+
+
+### Service Quotas
+
+* **Route 53**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/r53.html#limits_route53)
+* **Cognito Identity**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/cognito_identity.html#cognito-identity-quotas)
+* **Elastic Load Balancing**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/elb.html#limits_elastic_load_balancer)
+* **AppSync**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/appsync.html#limits_appsync)
+* **EC2**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/ec2-service.html#limits_ec2)
+* **VPC**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/vpc-service.html#vpc-quotas)
+* **DynamoDB**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/ddb.html#limits_dynamodb)
+* **ECS**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/ecs-service.html#limits_ecs)
+* **S3**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/s3.html#limits_s3)
+* **Lambda**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/lambda-service.html#limits_lambda)
+* **RDS**: [Service Quotas](https://docs.aws.amazon.com/general/latest/gr/rds-service.html#limits_rds)
+
+In general AWS quotas are quite generousn In my work, I've only had to request a quota increase a handful of times.
+
+### Request a Service Quota Increase
+
+I've requested a quota increase for On-demand and Spot Standard Instance Requests (vCPUs)
+
+![](./assets/week0/quota-increase.png)
 
 ## Class Notes
 ### Intro
