@@ -25,16 +25,16 @@ resource "aws_cloudwatch_metric_alarm" "billing_alarm" {
   }
 }
 
-resource "aws_budgets_budget" "zero_spend" {
-  name         = "zero-spend-budget"
+resource "aws_budgets_budget" "min_spend" {
+  name         = "min-spend-budget"
   budget_type  = "COST"
-  limit_amount = "1"
+  limit_amount = "2"
   limit_unit   = "USD"
   time_unit    = "MONTHLY"
 
   notification {
     comparison_operator        = "GREATER_THAN"
-    threshold                  = 0.01
+    threshold                  = 1
     threshold_type             = "ABSOLUTE_VALUE"
     notification_type          = "ACTUAL"
     subscriber_email_addresses = [var.account_admin_email]
