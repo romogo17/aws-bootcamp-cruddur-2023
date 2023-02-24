@@ -6,6 +6,11 @@
       - [BACKEND](#backend)
       - [FRONTEND](#frontend)
       - [DOCKER COMPOSE](#docker-compose)
+    - [OpenAPI Documentation for notifications endpoint](#openapi-documentation-for-notifications-endpoint)
+    - [Flask backend endpoint for notifications](#flask-backend-endpoint-for-notifications)
+    - [React page for notifications](#react-page-for-notifications)
+    - [DynamoDB Local container](#dynamodb-local-container)
+    - [PostgreSQL container](#postgresql-container)
   - [Homework Challenges](#homework-challenges)
 
 ## Required Homework
@@ -62,5 +67,38 @@ docker compose up
 ```
 
 ![](./assets/week1/docker-compose.png)
+
+### OpenAPI Documentation for notifications endpoint
+Completed the documentation of the notifications endpoint following the OpenAPI specification.
+
+![](./assets/week1/openapi.png)
+
+I'm glad we're using this! I had ussed swagger back then but hadn't played around with it in some time 😄
+
+### Flask backend endpoint for notifications
+
+Created the Flask backend endpoint for notifications
+![](./assets/week1/backend-notifications.png)
+
+### React page for notifications
+
+Created the React frontend page endpoint for notifications
+![](./assets/week1/frontend-notifications.png)
+
+Which, when accessed, looks like this:
+![](./assets/week1/notifications-browser.png)
+
+### DynamoDB Local container
+Included the `dynamodb-local` container to the Docker Compose and tested it out
+
+![](./assets/week1/dynamodb-local.png)
+
+I really liked that we get to play around with DynamoDB local. This is something I've been meaning to do for some time but didn't have the excuse to do it 🚀
+
+
+### PostgreSQL container
+Included the `postgres` container to the Docker Compose and tested it out
+
+![](./assets/week1/postgresql.png)
 
 ## Homework Challenges
