@@ -10,6 +10,14 @@
 
 ## Required Homework
 
+> **Note**: The following items are not documented here but already done through the student portal
+> - Watch How to ask for technical help video
+> - Watch Grading homework summaries
+> - I attended the Week 1 live stream
+> - I did commit my code on monday once I used my laptop again and realized I hadn't commited it
+> - Watched both the Spending and Container Security Considerations and did the respective quizzes
+>
+
 ### Containerize Applications
 - Created the `Dockerfile` for both the frontend and backend apps
 - Created the `docker-compose.yml` file
