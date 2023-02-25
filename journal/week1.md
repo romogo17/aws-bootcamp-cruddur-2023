@@ -12,6 +12,13 @@
     - [DynamoDB Local container](#dynamodb-local-container)
     - [PostgreSQL container](#postgresql-container)
   - [Homework Challenges](#homework-challenges)
+    - [Run the Dockerfile CMDs as an external script](#run-the-dockerfile-cmds-as-an-external-script)
+    - [Push image to DockerHub](#push-image-to-dockerhub)
+    - [Use multistage docker build](#use-multistage-docker-build)
+    - [Implement a healthcheck in the V3 Docker Compose file](#implement-a-healthcheck-in-the-v3-docker-compose-file)
+    - [Best practices around Dockerfiles](#best-practices-around-dockerfiles)
+    - [Install and run Docker in my local machine](#install-and-run-docker-in-my-local-machine)
+    - [Run docker in an EC2 instance](#run-docker-in-an-ec2-instance)
 
 ## Required Homework
 
@@ -102,3 +109,61 @@ Included the `postgres` container to the Docker Compose and tested it out
 ![](./assets/week1/postgresql.png)
 
 ## Homework Challenges
+
+### Run the Dockerfile CMDs as an external script
+The default `ENTRYPOINT` for containers is `/bin/sh -c`, as such, it expects a command, not a script.
+
+To have a script work, you need to change the entrypoint to something that accepts a script, like just a shell
+
+```Dockerfile
+ENTRYPOINT [ "/bin/sh" ]
+CMD [ "docker-cmd.sh" ]
+```
+
+The issue with this is that the shell then becomes the init process (PID 1) in the container, so, unless the script handles it, the container will ignore `SIGINT` or `SIGTERM`
+
+To overcome this issue, we need to use [`exec`](https://wiki.bash-hackers.org/commands/builtin/exec) in our script, so our application becomes PID 1 instead of the shell
+
+```sh
+#!/bin/bash
+set -e
+exec python3 -m flask run --host=0.0.0.0 --port=4567
+```
+
+### Push image to DockerHub
+I already had a DockerHub account, so I just had to login from my terminal
+
+```sh
+$ docker login --username romogo17
+Password:
+Login Succeeded
+```
+
+Then I created a couple repositories
+![](./assets/week1/dockerhub-repos.png)
+
+Then built my images with the correct tags/names
+
+```
+docker build -t romogo17/cruddur-backend ./backend-flask
+docker build -t romogo17/cruddur-frontend ./frontend-react-js
+```
+And push them to DockerHub
+
+```
+docker push romogo17/cruddur-backend
+docker push romogo17/cruddur-frontend
+```
+
+- https://hub.docker.com/r/romogo17/cruddur-frontend
+- https://hub.docker.com/r/romogo17/cruddur-backend
+
+### Use multistage docker build
+
+### Implement a healthcheck in the V3 Docker Compose file
+
+### Best practices around Dockerfiles
+
+### Install and run Docker in my local machine
+
+### Run docker in an EC2 instance
