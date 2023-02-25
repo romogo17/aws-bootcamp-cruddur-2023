@@ -162,6 +162,18 @@ docker push romogo17/cruddur-frontend
 
 ### Implement a healthcheck in the V3 Docker Compose file
 
+I wasn't aware docker now had [`HEALTHCHECK` Dockerfile instruction](https://docs.docker.com/engine/reference/builder/#healthcheck). This was a pleasant surprise as this is something very useful in Kubernetes (although there, they're called _probes_ 😄)
+
+This is the healthcheck I added to the backend service
+```
+healthcheck:
+  test: ["CMD", "curl -X GET http://localhost:4567/api/activities/home -H 'Accept: application/json' -H 'Content-Type: application/json'"]
+  interval: 30s
+  timeout: 10s
+  retries: 5
+  start_period: 30s
+```
+
 ### Best practices around Dockerfiles
 
 ### Install and run Docker in my local machine
