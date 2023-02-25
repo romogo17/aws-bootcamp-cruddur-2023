@@ -14,7 +14,7 @@
   - [Homework Challenges](#homework-challenges)
     - [Run the Dockerfile CMDs as an external script](#run-the-dockerfile-cmds-as-an-external-script)
     - [Push image to DockerHub](#push-image-to-dockerhub)
-    - [Use multistage docker build](#use-multistage-docker-build)
+    - [Use multistage Docker build](#use-multistage-docker-build)
     - [Implement a healthcheck in the V3 Docker Compose file](#implement-a-healthcheck-in-the-v3-docker-compose-file)
     - [Best practices around Dockerfiles](#best-practices-around-dockerfiles)
     - [Install and run Docker in my local machine](#install-and-run-docker-in-my-local-machine)
@@ -158,7 +158,38 @@ docker push romogo17/cruddur-frontend
 - https://hub.docker.com/r/romogo17/cruddur-frontend
 - https://hub.docker.com/r/romogo17/cruddur-backend
 
-### Use multistage docker build
+### Use multistage Docker build
+Multi stage Docker builds are all about ensuring images only have the minimum required software. For example, if you need to compile your sources, your final image doesn't need the compiler, so you build the image and then copy just the executable to a "fresh" base image.
+
+In our case, this can be easily applied to the frontenv image, in which we build our React App, and then just serve the bundle with a web server (nginx). Included this Dockerfile:
+
+```Dockerfile
+FROM node:16.18 as builder
+
+WORKDIR /frontend-react-js
+
+COPY package*.json .
+RUN npm install
+
+COPY public ./public
+COPY src ./src
+RUN npm run build
+
+FROM nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY --from=builder /frontend-react-js/build /usr/share/nginx/html
+EXPOSE 80
+RUN chown nginx.nginx /usr/share/nginx/html/ -R
+```
+
+Build and run with these commands:
+```sh
+# build
+docker build -t frontend-react-js-prod -f ./frontend-react-js/Dockerfile.prod ./frontend-react-js
+
+# run
+docker run --rm -p 3000:80 -d frontend-react-js-prod
+```
 
 ### Implement a healthcheck in the V3 Docker Compose file
 
@@ -194,5 +225,14 @@ docker inspect --format "{{json .State.Health }}" aws-bootcamp-cruddur-2023-back
 ### Best practices around Dockerfiles
 
 ### Install and run Docker in my local machine
+I already had Docker Desktop installed. I used it to build and push the images to DockerHub. Here's a screenshot running both the backend and frontend images
+
+![](./assets/week1/docker-local.png)
+
+Something I can point out is that, since I have an M1 MacBook, there's a LOT of instances where I've found myself into weird issues when I build an image with the `linux/arm64` platform, but then run the container on a `linux/amd64` platform. Because of this, I have this environment variable setup in my shell
+
+```
+DOCKER_DEFAULT_PLATFORM=linux/amd64
+```
 
 ### Run docker in an EC2 instance
