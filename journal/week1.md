@@ -224,6 +224,15 @@ docker inspect --format "{{json .State.Health }}" aws-bootcamp-cruddur-2023-back
 
 ### Best practices around Dockerfiles
 
+Some best practices added:
+* Added a `.dockerignore`
+* Use multistage builds (implemented in previous challenge)
+* Decouple apps: we're already doing this, one image for frontend, and another one for backend
+* Added some labels to the images
+* Long run lines are split into multiline commands
+* We're using `COPY` instead of `ADD`
+* Our custom CMD uses `exec` so that the process will react to `SIGINT` and/or `SIGTERM`
+
 ### Install and run Docker in my local machine
 I already had Docker Desktop installed. I used it to build and push the images to DockerHub. Here's a screenshot running both the backend and frontend images
 

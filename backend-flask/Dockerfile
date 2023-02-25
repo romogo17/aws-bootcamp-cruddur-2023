@@ -1,4 +1,6 @@
 FROM python:3.10-slim-buster
+LABEL org.opencontainers.image.authors="Roberto.Mora@experian.com"
+LABEL org.opencontainers.image.source="https://github.com/romogo17/aws-bootcamp-cruddur-2023.git"
 
 WORKDIR /backend-flask
 
