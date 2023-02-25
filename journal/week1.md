@@ -245,3 +245,76 @@ DOCKER_DEFAULT_PLATFORM=linux/amd64
 ```
 
 ### Run docker in an EC2 instance
+In order to run docker on an EC2 instance, I usually use an Ansible Playbook that installs and configures Docker
+
+Here's a screenshot that demonstrates this and bellow a playbook that can be used to get it installed
+
+![](./assets/week1/docker-ec2.png)
+
+
+```yaml
+- name: Sets up the Docker Engine in a RHEL 8 instance
+  hosts: all
+  become: yes
+
+  vars:
+    yum_docker_repo: https://download.docker.com/linux/centos/docker-ce.repo
+    packages:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    docker_users:
+      - ec2-user
+    compose_url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+
+  tasks:
+    - name: Ensure we're running on RedHat
+      assert:
+        that:
+          - ansible_os_family == 'RedHat'
+
+    - name: Import the Docker CE repo from predefined .repo file
+      command:
+        cmd: "dnf config-manager --add-repo {{ yum_docker_repo }}"
+        warn: false
+        creates: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Ensure the Docker packages are installed
+      dnf:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ packages }}"
+
+    - name: Create Docker group
+      group:
+        name: docker
+        state: present
+
+    - name: Ensure the docker users exist and are members of the docker group
+      user:
+        name: "{{ item }}"
+        shell: /bin/bash
+        groups: docker
+        append: yes
+      loop: "{{ docker_users }}"
+
+    - name: Docker start
+      systemd:
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+        name: docker
+
+    - name: Docker compose
+      block:
+        - name: Download Docker Compose
+          get_url:
+            url: "{{ compose_url }}"
+            dest: /usr/local/bin/docker-compose
+
+        - name: Ensure group and others can execute Docker Compose
+          file:
+            path: /usr/local/bin/docker-compose
+            mode: u=rwx,g=rx,o=rx
+
+```
