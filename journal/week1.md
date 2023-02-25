@@ -164,14 +164,31 @@ docker push romogo17/cruddur-frontend
 
 I wasn't aware docker now had [`HEALTHCHECK` Dockerfile instruction](https://docs.docker.com/engine/reference/builder/#healthcheck). This was a pleasant surprise as this is something very useful in Kubernetes (although there, they're called _probes_ 😄)
 
-This is the healthcheck I added to the backend service
-```
+This is the healthcheck I added to the backend service. For this to work, I also had to install `curl` in the backend image
+```sh
 healthcheck:
   test: ["CMD", "curl -X GET http://localhost:4567/api/activities/home -H 'Accept: application/json' -H 'Content-Type: application/json'"]
   interval: 30s
   timeout: 10s
   retries: 5
   start_period: 30s
+```
+
+This shows the container actually being healthy
+
+```sh
+$ docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}"
+
+CONTAINER ID   NAMES                                           STATUS
+6e57cfbaae1f   aws-bootcamp-cruddur-2023-db-1                  Up 54 seconds
+57235eacd3ed   aws-bootcamp-cruddur-2023-frontend-react-js-1   Up 53 seconds
+cfe0e773f535   aws-bootcamp-cruddur-2023-backend-flask-1       Up 53 seconds (healthy)
+ad2271d7b4fc   dynamodb-local                                  Up 54 seconds
+
+```
+The healthcheck logs can be inspected like this:
+```sh
+docker inspect --format "{{json .State.Health }}" aws-bootcamp-cruddur-2023-backend-flask-1
 ```
 
 ### Best practices around Dockerfiles
