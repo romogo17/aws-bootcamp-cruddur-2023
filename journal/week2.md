@@ -13,6 +13,12 @@
 > - Watched both the Spending and Container Security Considerations and did the respective quizzes
 
 ### Instrument Honeycomb with OTEL
+The Honeycomb instrumentation was done during the live session. For that one, we used the Open Telemetry libraries.
+![](./assets/week2/honeycomb-query.png)
+![](./assets/week2/honeycomb-metadata.png)
+
+I want to point out, having done both Honeycomb and X-Ray at the time of writing, instrumenting for Honeycomb was much more intuitive and easy!
+
 ### Instrument AWS X-Ray
 Completed the instrumentation with AWS X-Ray. The AWS resources we needed to create for it were created using Terraform.
 The code for that is under [`./infrastructure/02-app`](./../infrastructure/02-app/).
