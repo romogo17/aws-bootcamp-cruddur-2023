@@ -4,6 +4,8 @@
   - [Required Homework](#required-homework)
     - [Instrument Honeycomb with OTEL](#instrument-honeycomb-with-otel)
     - [Instrument AWS X-Ray](#instrument-aws-x-ray)
+    - [Configured a custom logger with CloudWatch Logs](#configured-a-custom-logger-with-cloudwatch-logs)
+    - [Integrate an error and capture an error](#integrate-an-error-and-capture-an-error)
   - [Homework Challenges](#homework-challenges)
 
 
@@ -36,5 +38,20 @@ After some troubleshooting I managed to get it working
 
 When opening the trace I could also see the custom metadata added
 ![](./assets/week2/xray-metadata.png)
+
+### Configured a custom logger with CloudWatch Logs
+
+Following the instructions provided in the video, configured custom logger to send logs to CloudWatch Logs
+
+![](./assets/week2/cloudwatch-logs-group.png)
+![](./assets/week2/cloudwatch-logs-stream.png)
+
+This was done with this commit ([`a055c35`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/a055c350a04667b78362fcfd016b77df25b2ef3d)) but later on commented to save on costs
+
+### Integrate an error and capture an error
+
+I found the integration with Rollbar as easy as the one with Honeycomb. Very intuitive :smile:
+
+![](./assets/week2/rollbar-error.png)
 
 ## Homework Challenges
