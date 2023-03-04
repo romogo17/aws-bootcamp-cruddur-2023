@@ -1,0 +1,23 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: "0.0.0.0:4318"
+        # cors:
+        #   allowed_origins:
+        #     - '*'
+
+processors:
+  batch:
+exporters:
+  otlp/honeycomb:
+    endpoint: "api.honeycomb.io:443"
+    headers:
+      "x-honeycomb-team": ${env:HONEYCOMB_API_KEY}
+      #  "x-honeycomb-dataset": "YOUR_DATASET"
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/honeycomb]
