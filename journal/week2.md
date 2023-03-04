@@ -7,6 +7,9 @@
     - [Configured a custom logger with CloudWatch Logs](#configured-a-custom-logger-with-cloudwatch-logs)
     - [Integrate an error and capture an error](#integrate-an-error-and-capture-an-error)
   - [Homework Challenges](#homework-challenges)
+    - [Instrument Honeycomb for the frontend application (to observe network latency between frontend and backend)](#instrument-honeycomb-for-the-frontend-application-to-observe-network-latency-between-frontend-and-backend)
+      - [OTEL COLLECTOR](#otel-collector)
+      - [FRONTEND INSTRUMENTATION](#frontend-instrumentation)
 
 
 ## Required Homework
@@ -55,3 +58,96 @@ I found the integration with Rollbar as easy as the one with Honeycomb. Very int
 ![](./assets/week2/rollbar-error.png)
 
 ## Homework Challenges
+
+### Instrument Honeycomb for the frontend application (to observe network latency between frontend and backend)
+
+Instrumenting the frontend follows two high level steps:
+1. Setup an Open Telemetry (OTEL) Collector. The collector will listen for the traces, and, through a pipeline, send them to the HoneyComb backend
+2. Instrument the frontend application
+
+#### OTEL COLLECTOR
+
+<p align="center">
+  <img src="./assets/week2/basic-collector.jpeg">
+</p>
+
+In the [HoneyComb documentation](https://docs.honeycomb.io/getting-data-in/otel-collector/#running-the-collector) for the Open Telemetry Collector, I found an example of how to run the collector with Docker
+
+```sh
+docker run \
+  -p 14268:14268 \
+  -p 4317-4318:4317-4318 \
+  -v $(pwd)/otel_collector_config.yaml:/etc/otelcol/config.yaml \
+  otel/opentelemetry-collector:latest
+
+```
+Also in the official [Open Telemetry documentation](https://opentelemetry.io/docs/collector/getting-started/) for the collector, there's an example on how to run it in Docker Compose. After doing a few tweaks this is how it looks
+
+```yaml
+  otel-collector:
+    image: otel/opentelemetry-collector
+    command: [--config=/etc/otel-collector-config.yaml]
+    environment:
+      HTTP_FRONTEND_URL: "http://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+      HTTPS_FRONTEND_URL: "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+      HONEYCOMB_API_KEY: "${HONEYCOMB_API_KEY}"
+    volumes:
+      - ./frontend-react-js/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - 4318:4318 # OTLP http receiver
+```
+
+The collector also needs some configuration (trace pipeline), which was defined as follows:
+
+```yaml
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: "0.0.0.0:4318"
+        cors:
+          allowed_origins:
+            - ${env:HTTP_FRONTEND_URL}
+            - ${env:HTTPS_FRONTEND_URL}
+
+processors:
+  batch:
+exporters:
+  otlp/honeycomb:
+    endpoint: "api.honeycomb.io:443"
+    headers:
+      "x-honeycomb-team": ${env:HONEYCOMB_API_KEY}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/honeycomb]
+```
+
+#### FRONTEND INSTRUMENTATION
+For the frontend implementation, we need to define an environment variable for the OTEL Collector. I got stuck with this for some time because I wasn't aware that the environment variables for applications created with `create-react-app` need to be prefixed with `REACT_APP_` ([documentation on environment variables](https://create-react-app.dev/docs/adding-custom-environment-variables/)).
+
+This was very puzzling to me because duing troubleshooting, I always got `undefined` values until I found this gotcha!
+
+Another issue when setting this up was with CORS, the backend had to be tweaked just a bit to allow the `traceparent` header
+
+```diff
+  cors = CORS(
+    app,
+    resources={r"/api/*": {"origins": origins}},
+    expose_headers="location,link",
+-   allow_headers="content-type,if-modified-since",
++   allow_headers=["Content-Type", "if-modified-since", "traceparent"],
+    meth
+  )
+```
+
+Other than these gotchas, the frontend was instrumented following the instructions in the [Honeycomb documentation](https://docs.honeycomb.io/getting-data-in/opentelemetry/browser-js/)
+
+I could see both the frontend and the backend datasets
+![](./assets/week2/honeycomb-datasets.png)
+
+And I could also see the traces going from the frontend to the backend
+![](./assets/week2/honeycomb-frontend-to-backend.png)
