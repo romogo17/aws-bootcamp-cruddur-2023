@@ -38,3 +38,7 @@ ports:
   - name: xray-daemon
     port: 2000
     visibility: public
+  - name: otel-collector
+    port: 4318
+    visibility: public
+  

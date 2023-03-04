@@ -10,12 +10,10 @@ import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
-console.log(`here2 ===> ${process.env.REACT_APP_BACKEND_URL}`)
-console.log(`here1 ===> ${process.env.WHATS_GOING_ON_W_THIS}`)
+console.log(`Using OTEL Collector URL = ${process.env.REACT_APP_OTEL_COLLECTOR_URL}`)
 
 const exporter = new OTLPTraceExporter({
-    // url: process.env.OTEL_COLLECTOR
-    url: "https://4318-romogo17-awsbootcampcru-0fj0ipe2vl8.ws-us89.gitpod.io/v1/traces"
+    url: `${process.env.REACT_APP_OTEL_COLLECTOR_URL}/v1/traces`
 });
 const provider = new WebTracerProvider({
     resource: new Resource({
@@ -29,11 +27,11 @@ provider.register({
 
 registerInstrumentations({
     instrumentations: [
-    //   new XMLHttpRequestInstrumentation({
-    //     propagateTraceHeaderCorsUrls: [
-    //        /.+/g, //Regex to match your backend urls. This should be updated.
-    //     ]
-    //   }),
+      //   new XMLHttpRequestInstrumentation({
+      //     propagateTraceHeaderCorsUrls: [
+      //        /.+/g, //Regex to match your backend urls. This should be updated.
+      //     ]
+      //   }),
       new FetchInstrumentation({
         propagateTraceHeaderCorsUrls: [
            /.+/g, //Regex to match your backend urls. This should be updated.
@@ -41,24 +39,3 @@ registerInstrumentations({
       }),
     ],
   });
-
-// registerInstrumentations({
-//     instrumentations: [
-//         getWebAutoInstrumentations({
-//             // load custom configuration for xml-http-request instrumentation
-//             '@opentelemetry/instrumentation-xml-http-request': {
-//                 propagateTraceHeaderCorsUrls: [
-//                     /.+/g,
-//                     process.env.REACT_APP_BACKEND_URL
-//                 ],
-//             },
-//             // load custom configuration for fetch instrumentation
-//             '@opentelemetry/instrumentation-fetch': {
-//                 propagateTraceHeaderCorsUrls: [
-//                     /.+/g,
-//                     process.env.REACT_APP_BACKEND_URL
-//                 ],
-//             },
-//         }),
-//     ],
-// });
