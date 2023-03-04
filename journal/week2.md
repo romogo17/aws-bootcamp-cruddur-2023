@@ -10,6 +10,7 @@
     - [Instrument Honeycomb for the frontend application (to observe network latency between frontend and backend)](#instrument-honeycomb-for-the-frontend-application-to-observe-network-latency-between-frontend-and-backend)
       - [OTEL COLLECTOR](#otel-collector)
       - [FRONTEND INSTRUMENTATION](#frontend-instrumentation)
+    - [Add custom instrumentation to Honeycomb to add more attributes](#add-custom-instrumentation-to-honeycomb-to-add-more-attributes)
 
 
 ## Required Homework
@@ -151,3 +152,22 @@ I could see both the frontend and the backend datasets
 
 And I could also see the traces going from the frontend to the backend
 ![](./assets/week2/honeycomb-frontend-to-backend.png)
+
+### Add custom instrumentation to Honeycomb to add more attributes
+
+For this homework challenge, I instrumented each and every backend endpoint, added a custom span for the mock data of each and added attributes for the `user_handle` where relevant
+
+- [`d2527181`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/d252718e35c3271d825062f3d907b152bb2c562d) instrumented `create_activity`
+- [`158d82f1`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/158d82f07efd0f8601a11ed177e1d45c2f344f5d) instrumented `create_message`
+- [`f3974101`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/f397410a16700306fba8a2c40a8aeeb993ad9325) instrumented `create_reply`
+- [`2ee3cf21`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/2ee3cf2aa40b64ef8c2550fa47160a4388c3d208) instrumented `message_groups`
+- [`b227ead1`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/b227ead7a0da6a322511556d19b646afae9eb56f) instrumented `messages`
+- [`84939301`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/8493930bb1b6a345215d28bd600a412b4bd7b6c4) instrumented `notifications_activities`
+- [`d5e34081`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/d5e3408eed2f1060e35d7087338ea7dd03987aef) instrumented `search_activities`
+- [`237677a1`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/237677a9d41f7ee484aeaa7ec906ea142d4180d2) instrumented `show_activity`
+- [`7344fb8`](https://github.com/romogo17/aws-bootcamp-cruddur-2023/commit/7344fb800beef6904dbf6b0878dfde9b6ca9325c) instrumented `user_activities`
+
+
+![](./assets/week2/honeycomb-user-handle.png)
+
+This means that every single frontend fetch request (which are now instruented), should have the corresponding backend data instrumented as well.
