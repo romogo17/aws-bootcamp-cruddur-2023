@@ -11,6 +11,11 @@
       - [OTEL COLLECTOR](#otel-collector)
       - [FRONTEND INSTRUMENTATION](#frontend-instrumentation)
     - [Add custom instrumentation to Honeycomb to add more attributes](#add-custom-instrumentation-to-honeycomb-to-add-more-attributes)
+    - [Run custom queries in Honeycomb and save them later](#run-custom-queries-in-honeycomb-and-save-them-later)
+      - [APP ACTIVE USERS](#app-active-users)
+      - [LATENCY BY USER](#latency-by-user)
+      - [REQUESTS BY USER](#requests-by-user)
+      - [HONEYCOMB DASHBOARD](#honeycomb-dashboard)
 
 
 ## Required Homework
@@ -171,3 +176,26 @@ For this homework challenge, I instrumented each and every backend endpoint, add
 ![](./assets/week2/honeycomb-user-handle.png)
 
 This means that every single frontend fetch request (which are now instruented), should have the corresponding backend data instrumented as well.
+
+### Run custom queries in Honeycomb and save them later
+
+I spent some time playing around with the data I had instrumented, and came up with the following interesting queries
+
+#### APP ACTIVE USERS
+Shows how many different active users interact with Cruddur on a given timeframe
+![](./assets/week2/honeycomb-query-active-users.png)
+
+#### LATENCY BY USER
+Shows the latency of the requests grouped by users
+![](./assets/week2/honeycomb-query-latency-by-user.png)
+
+#### REQUESTS BY USER
+Shows the count of requests by user, can tell us which users are more active in the app
+![](./assets/week2/honeycomb-query-requests-by-user.png)
+
+---
+
+The saved queries can be accessed in the History menu, under My Saved Queries. However, I found it better to create a dashboard with all the queries
+
+#### HONEYCOMB DASHBOARD
+![](./assets/week2/honeycomb-dashboard.png)
