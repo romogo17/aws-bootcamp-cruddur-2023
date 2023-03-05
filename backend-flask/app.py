@@ -90,8 +90,8 @@ origins = [frontend, backend]
 cors = CORS(
   app, 
   resources={r"/api/*": {"origins": origins}},
-  expose_headers="location,link",
-  allow_headers=["Content-Type", "if-modified-since", "traceparent"],
+  expose_headers=["location", "link", "Authorization"],
+  allow_headers=["Content-Type", "if-modified-since", "traceparent", "Authorization"],
   methods="OPTIONS,GET,HEAD,POST"
 )
 
@@ -143,6 +143,7 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
+  print(request.headers.get('Authorization'))
   data = HomeActivities.run()
   return data, 200
 
