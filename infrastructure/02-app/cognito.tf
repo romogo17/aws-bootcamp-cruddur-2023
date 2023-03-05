@@ -5,7 +5,7 @@ resource "aws_cognito_user_pool" "cruddur" {
   deletion_protection = "INACTIVE"
 
   auto_verified_attributes = ["email"]
-  alias_attributes         = ["email"]
+  username_attributes      = ["email"]
 
   verification_message_template {
     default_email_option = "CONFIRM_WITH_CODE"
