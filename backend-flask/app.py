@@ -2,6 +2,7 @@ from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
+from lib.cognito_jwt_token import CognitoJwtToken, extract_access_token, TokenVerifyError
 
 # HoneyComb =======================================================================
 from opentelemetry import trace
@@ -10,11 +11,11 @@ from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-# =================================================================================
+
 # XRay ============================================================================
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
-# =================================================================================
+
 # Watchtower ======================================================================
 # import watchtower
 # import logging
@@ -28,12 +29,11 @@ from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
 # LOGGER.addHandler(console_handler)
 # LOGGER.addHandler(cw_handler)
 # LOGGER.info("some message")
-# =================================================================================
+
 # Rollbar =========================================================================
 import rollbar
 import rollbar.contrib.flask
 from flask import got_request_exception
-# =================================================================================
 
 from services.home_activities import *
 from services.notifications_activities import *
@@ -53,22 +53,28 @@ processor = BatchSpanProcessor(OTLPSpanExporter())
 provider.add_span_processor(processor)
 trace.set_tracer_provider(provider)
 tracer = trace.get_tracer(__name__)
-# =================================================================================
+
 # XRay ============================================================================
 xray_url = os.getenv("AWS_XRAY_URL")
 xray_recorder.configure(service='cruddur-backend-flask', dynamic_naming=xray_url)
-# =================================================================================
 
 app = Flask(__name__)
+
+# AWS Cognito =====================================================================
+cognito_jwt_token = CognitoJwtToken(
+  user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
+  user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
+  region=os.getenv("AWS_DEFAULT_REGION")
+)
 
 # HoneyComb =======================================================================
 # Initialize automatic instrumentation with Flask
 FlaskInstrumentor().instrument_app(app)
 RequestsInstrumentor().instrument()
-# =================================================================================
+
 # XRay ============================================================================
 XRayMiddleware(app, xray_recorder)
-# =================================================================================
+
 # Rollbar =========================================================================
 rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
 rollbar.init(
@@ -82,7 +88,6 @@ rollbar.init(
     allow_logging_basic_config=False)
 # send exceptions from `app` to rollbar, using flask's signal system.
 got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
-# =================================================================================
 
 frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
@@ -143,8 +148,20 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
-  print(request.headers.get('Authorization'))
-  data = HomeActivities.run()
+  # print(request.headers.get('Authorization'))
+  access_token = extract_access_token(request.headers)
+  try:
+    claims = cognito_jwt_token.verify(access_token)
+    # authenicatied request
+    # app.logger.debug("authenicated")
+    # app.logger.debug(claims)
+    app.logger.debug(f"authenticated request for user={claims['username']}")
+    data = HomeActivities.run(cognito_user_id=claims['username'])
+  except TokenVerifyError as e:
+    # unauthenicatied request
+    # app.logger.debug(e)
+    # app.logger.debug("unauthenicated")
+    data = HomeActivities.run()
   return data, 200
 
 @app.route("/api/activities/notifications", methods=['GET'])
