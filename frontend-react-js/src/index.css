@@ -1,8 +1,20 @@
+:root {
+  --bg: rgb(1, 55, 99);
+  --bg-a1: rgba(1, 55, 99,0.1);
+  --fg: rgb(0, 7, 12);
+  --primary: rgb(193, 81, 165);
+  --primary-a1: rgba(193,81,165,0.1);
+  --primary-a2: rgba(193,81,165,0.2);
+  --primary-a5: rgba(193,81,165,0.5);
+  --primary-a7: rgba(193,81,165,0.7);
+  --primary-a8: rgba(193,81,165,0.8);
+}
+
 * { box-sizing: border-box; }
 html,body { 
   height: 100%; 
   width: 100%; 
-  background: rgb(14,3,28);
+  background: var(--bg)
 }
 
 body {

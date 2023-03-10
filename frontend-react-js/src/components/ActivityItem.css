@@ -1,7 +1,7 @@
 .activity_item {
   display: flex;
   flex-direction: column;
-  border-bottom: solid 1px rgb(31,36,49);
+  border-bottom: solid 1px rgb(53 61 83);
   overflow: hidden;
   padding: 16px;
 }
@@ -38,9 +38,9 @@
 }
 
 .activity_item .activity_actions .action:hover {
-  background: rgba(149,0,255,0.2);
+  background: var(--primary-a2);
 }
 
 .activity_item .activity_actions .action:hover .icon {
-  fill: rgb(149,0,255);
+  fill: var(--primary);
 }
