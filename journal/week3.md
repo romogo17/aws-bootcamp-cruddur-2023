@@ -2,12 +2,38 @@
 
 - [Week 3 — Decentralized Authentication](#week-3--decentralized-authentication)
   - [Required Homework](#required-homework)
+    - [Setup a Cognito User Pool](#setup-a-cognito-user-pool)
+    - [Updated the frontend stypes to improve the contrast](#updated-the-frontend-stypes-to-improve-the-contrast)
+    - [Custom Signin, Signup, Confirmation and Recovery Pages](#custom-signin-signup-confirmation-and-recovery-pages)
   - [Homework Challenges](#homework-challenges)
     - [Cognito Identity Pool and Identity Pool Client created through Terraform](#cognito-identity-pool-and-identity-pool-client-created-through-terraform)
   - [Class Notes](#class-notes)
     - [Intro](#intro)
 
 ## Required Homework
+> **Note**: The following items are not documented here but already done through the student portal
+> - I attended the Week 3 live stream
+> - Watched both the Spending and Container Security Considerations and did the respective quizzes
+> - Watched the video about different approached to verify JWTs
+
+### Setup a Cognito User Pool
+I followed along during the livestream, however, as en extra challenge, I created my final user pool through Terraform, this is explained further in the first Homework Challenge [below](#cognito-identity-pool-and-identity-pool-client-created-through-terraform)
+
+![](./assets/week3/cognito-user-pool.png)
+
+### Updated the frontend stypes to improve the contrast
+Updated the styles of the project to use CSS variables across the whole page. All of the color changes are controlled by CSS variables
+
+![](./assets/week3/cruddur-colors.png)
+
+### Custom Signin, Signup, Confirmation and Recovery Pages
+All of the custom pages for the whole authentication flow were implemented following the instructional videos, for instance, if an error is encountered during login, said error is shown in the UI
+
+![](./assets/week3/signin-error.png)
+
+When the authentication is successful, the user information is shown in the UI, and the additional mock data that is only returned by the backend when users are authenticated is also returned
+
+![](./assets/week3/cuddur-logged-in.png)
 
 
 ## Homework Challenges
