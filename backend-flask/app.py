@@ -106,10 +106,10 @@ cors = CORS(
 #     LOGGER.error('%s %s %s %s %s %s', timestamp, request.remote_addr, request.method, request.scheme, request.full_path, response.status)
 #     return response
 
-@app.route('/rollbar/test')
-def rollbar_test():
-    rollbar.report_message('Hello World!', 'warning')
-    return "Hello World!"
+@app.route('/health')
+def health():
+    """The API's health endpoint"""
+    return {"status": "ok"}
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():

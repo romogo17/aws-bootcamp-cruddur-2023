@@ -22,8 +22,8 @@ services:
     volumes:
       - ./backend-flask:/backend-flask
     healthcheck:
-      test: ["CMD-SHELL", "curl -X GET http://localhost:4567/api/activities/home -H 'Accept: application/json' -H 'Content-Type: application/json'"]
-      interval: 30s
+      test: ["CMD-SHELL", "curl -X GET http://localhost:4567/health -H 'Accept: application/json' -H 'Content-Type: application/json'"]
+      interval: 60s
       timeout: 10s
       retries: 5
       start_period: 30s
@@ -51,27 +51,27 @@ services:
       - ./frontend-react-js/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
       - 4318:4318 # OTLP http receiver
-  db:
-    image: postgres:13-alpine
-    restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-    ports:
-      - '5432:5432'
-    volumes:
-      - db:/var/lib/postgresql/data
-  dynamodb-local:
-    # https://stackoverflow.com/questions/67533058/persist-local-dynamodb-data-in-volumes-lack-permission-unable-to-open-databa
-    # We needed to add user:root to get this working.
-    user: root
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-    image: "amazon/dynamodb-local:latest"
-    ports:
-      - "8000:8000"
-    volumes:
-      - "./docker/dynamodb:/home/dynamodblocal/data"
-    working_dir: /home/dynamodblocal
+  # db:
+  #   image: postgres:13-alpine
+  #   restart: always
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=password
+  #   ports:
+  #     - '5432:5432'
+  #   volumes:
+  #     - db:/var/lib/postgresql/data
+  # dynamodb-local:
+  #   # https://stackoverflow.com/questions/67533058/persist-local-dynamodb-data-in-volumes-lack-permission-unable-to-open-databa
+  #   # We needed to add user:root to get this working.
+  #   user: root
+  #   command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+  #   image: "amazon/dynamodb-local:latest"
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - "./docker/dynamodb:/home/dynamodblocal/data"
+  #   working_dir: /home/dynamodblocal
   xray-daemon:
     image: "amazon/aws-xray-daemon"
     environment:
