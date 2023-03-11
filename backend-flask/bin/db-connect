@@ -1,0 +1,10 @@
+#! /usr/bin/bash
+
+if [ "$1" = "prod" ]; then
+  echo "Running in production mode"
+  URL=$REMOTE_DB_CONNECTION_URL
+else
+  URL=$LOCAL_DB_CONNECTION_URL
+fi
+
+psql $URL
