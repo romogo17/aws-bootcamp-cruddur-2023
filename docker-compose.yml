@@ -1,9 +1,26 @@
 version: "3.8"
 services:
+  envoy:
+    build: ./envoy
+    ports:
+      - "8800:8800"
+      - "8081:8001"
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+  authz:
+    build: ./cognito-authz
+    expose:
+      - "8123"
+    ports:
+      - "8123:8123"
+    environment:
+      AWS_COGNITO_USER_POOL_ID: "${AWS_USER_POOLS_ID}"
+      AWS_COGNITO_USER_POOL_CLIENT_ID: "${AWS_USER_POOLS_WEB_CLIENT_ID}"
   backend-flask:
     environment:
       FRONTEND_URL: "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
       BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+      ENVOY_URL: "https://8800-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
       OTEL_SERVICE_NAME: "cruddur-backend-flask"
       OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
       OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
@@ -30,6 +47,7 @@ services:
   frontend-react-js:
     environment:
       REACT_APP_BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+      REACT_APP_ENVOY_URL: "https://8800-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
       REACT_APP_OTEL_COLLECTOR_URL: "https://4318-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
       REACT_APP_AWS_PROJECT_REGION: "${AWS_DEFAULT_REGION}"
       REACT_APP_AWS_COGNITO_REGION: "${AWS_DEFAULT_REGION}"

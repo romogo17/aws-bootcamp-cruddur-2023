@@ -2,7 +2,7 @@ from flask import Flask
 from flask import request
 from flask_cors import CORS, cross_origin
 import os
-from lib.cognito_jwt_token import CognitoJwtToken, extract_access_token, TokenVerifyError
+# from lib.cognito_jwt_token import CognitoJwtToken, extract_access_token, TokenVerifyError
 
 # HoneyComb =======================================================================
 from opentelemetry import trace
@@ -61,11 +61,11 @@ xray_recorder.configure(service='cruddur-backend-flask', dynamic_naming=xray_url
 app = Flask(__name__)
 
 # AWS Cognito =====================================================================
-cognito_jwt_token = CognitoJwtToken(
-  user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
-  user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
-  region=os.getenv("AWS_DEFAULT_REGION")
-)
+# cognito_jwt_token = CognitoJwtToken(
+#   user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
+#   user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
+#   region=os.getenv("AWS_DEFAULT_REGION")
+# )
 
 # HoneyComb =======================================================================
 # Initialize automatic instrumentation with Flask
@@ -91,6 +91,7 @@ got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 
 frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
+envot = os.getenv('ENVOY_URL')
 origins = [frontend, backend]
 cors = CORS(
   app, 
@@ -148,19 +149,14 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
-  # print(request.headers.get('Authorization'))
-  access_token = extract_access_token(request.headers)
-  try:
-    claims = cognito_jwt_token.verify(access_token)
+  app.logger.debug(request.headers)
+  cognito_username = request.headers.get("X-Cognito-Username", None)
+  if cognito_username != None:
     # authenicatied request
-    # app.logger.debug("authenicated")
-    # app.logger.debug(claims)
-    app.logger.debug(f"authenticated request for user={claims['username']}")
-    data = HomeActivities.run(cognito_user_id=claims['username'])
-  except TokenVerifyError as e:
+    app.logger.debug(f"authenticated request for user={cognito_username}")
+    data = HomeActivities.run(cognito_user_id=cognito_username)
+  else:
     # unauthenicatied request
-    # app.logger.debug(e)
-    # app.logger.debug("unauthenicated")
     data = HomeActivities.run()
   return data, 200
 
