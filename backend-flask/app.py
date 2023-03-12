@@ -62,7 +62,7 @@ app = Flask(__name__)
 
 # AWS Cognito =====================================================================
 # cognito_jwt_token = CognitoJwtToken(
-#   user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"), 
+#   user_pool_id=os.getenv("AWS_COGNITO_USER_POOL_ID"),
 #   user_pool_client_id=os.getenv("AWS_COGNITO_USER_POOL_CLIENT_ID"),
 #   region=os.getenv("AWS_DEFAULT_REGION")
 # )
@@ -91,10 +91,9 @@ got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 
 frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
-envot = os.getenv('ENVOY_URL')
 origins = [frontend, backend]
 cors = CORS(
-  app, 
+  app,
   resources={r"/api/*": {"origins": origins}},
   expose_headers=["location", "link", "Authorization"],
   allow_headers=["Content-Type", "if-modified-since", "traceparent", "Authorization"],
@@ -151,7 +150,7 @@ def data_create_message():
 def data_home():
   app.logger.debug(request.headers)
   cognito_username = request.headers.get("X-Cognito-Username", None)
-  if cognito_username != None:
+  if cognito_username is not None:
     # authenicatied request
     app.logger.debug(f"authenticated request for user={cognito_username}")
     data = HomeActivities.run(cognito_user_id=cognito_username)
