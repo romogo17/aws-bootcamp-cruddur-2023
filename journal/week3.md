@@ -59,7 +59,9 @@ aws cognito-idp \
   --client-id "abc123abc123"  > user-pool-client.json
 ```
 
-I then used the output to map the values to Terraform's [`cognito_user_pool`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool) and [`cognito_user_pool_client`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool_client) resources. After deploying the resources I followed the same approach to describe them and diff them agains the Identity Pool and Identity Pool Client created manually
+I then used the output to map the values to Terraform's [`cognito_user_pool`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool) and [`cognito_user_pool_client`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool_client) resources. After deploying the resources I followed the same approach to describe them and diff them against the Identity Pool and Identity Pool Client created manually.
+
+The code can be found under [`infrastructure/02-app/cognito.tf`](../infrastructure/02-app/cognito.tf)
 
 ### Decouple the JWT verification using both **Envoy** and a sidecar container using the `aws-jwt-verify` library
 
@@ -151,6 +153,8 @@ admin:
 #### THE AUTHZ APP
 The Node.js authorization app is defined below, it uses the `aws-jwt-verify` library to verify the JWTs. If the JWT is valid, it adds a `x-cognito-username` Header to the request to the backend.
 
+If the JWT is not valid, it doesn't reject the request, it just doesn't add a `x-cognito-username` Header. This is handled by the backend
+
 ```js
 const { CognitoJwtVerifier } = require("aws-jwt-verify");
 const express = require("express");
@@ -200,8 +204,6 @@ jwtVerifier
     })
   );
 ```
-
-If the JWT is not valid, it doesn't reject the request, it just doesn't add a `x-cognito-username` Header. This is handled by the backend
 
 #### BAKCEND CHANGES
 
