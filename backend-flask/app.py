@@ -148,7 +148,7 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
-  app.logger.debug(request.headers)
+  # app.logger.debug(request.headers)
   cognito_username = request.headers.get("X-Cognito-Username", None)
   if cognito_username is not None:
     # authenicatied request

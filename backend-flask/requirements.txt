@@ -14,5 +14,7 @@ watchtower
 blinker
 rollbar
 
-# Flask-AWSCognito
 python-jose
+
+psycopg[binary]
+psycopg[pool]
