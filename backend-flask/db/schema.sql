@@ -8,7 +8,8 @@ CREATE TABLE public.users (
   handle text NOT NULL,
   email text NOT NULL,
   cognito_user_id text NOT NULL,
-  created_at TIMESTAMP default current_timestamp NOT NULL
+  created_at TIMESTAMP default current_timestamp NOT NULL,
+  updated_at TIMESTAMP default current_timestamp NOT NULL
 );
 
 CREATE TABLE public.activities (
@@ -21,7 +22,23 @@ CREATE TABLE public.activities (
   reply_to_activity_uuid integer,
   expires_at TIMESTAMP,
   created_at TIMESTAMP default current_timestamp NOT NULL,
+  updated_at TIMESTAMP default current_timestamp NOT NULL,
   CONSTRAINT fk_user_uuid
       FOREIGN KEY(user_uuid)
       REFERENCES users(uuid)
 );
+
+CREATE OR REPLACE FUNCTION func_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE OR REPLACE TRIGGER trig_users_updated_at 
+BEFORE UPDATE ON users 
+FOR EACH ROW EXECUTE PROCEDURE func_updated_at();
+CREATE OR REPLACE TRIGGER trig_activities_updated_at 
+BEFORE UPDATE ON activities 
+FOR EACH ROW EXECUTE PROCEDURE func_updated_at();
