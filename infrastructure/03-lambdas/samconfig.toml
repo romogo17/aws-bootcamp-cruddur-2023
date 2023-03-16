@@ -1,0 +1,15 @@
+version = 0.1
+
+[default.build.parameters]
+use_container = true
+
+[default.deploy.parameters]
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+shared_credentials_file = "~/Dev/.aws/credentials"
+profile = "convoluted-io-cloud-bootcamp"
+confirm_changeset = true
+image_repositories = []
+stack_name = "cruddur-serverless"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-d1sxf6a1kwth"
+s3_prefix = "cruddur-serverless"

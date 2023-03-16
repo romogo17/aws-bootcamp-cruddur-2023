@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Cruddur serverless infrastructure
+
+Parameters:
+  ConnectionUrl:
+    Type: String
+    Description: Database connection URL
+
+Globals:
+  Function:
+    Environment:
+      Variables:
+        POWERTOOLS_SERVICE_NAME: cruddur
+        LOG_LEVEL: INFO
+    Layers:
+      - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV2:22
+    Architectures:
+      - x86_64
+
+Resources:
+  PostUserConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostUserConfirmationTrigger
+      CodeUri: functions/post_user_confirmation/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Environment:
+        Variables:
+          CONNECTION_URL: !Ref ConnectionUrl
+      Policies:
+        - VPCAccessPolicy: {}
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-07ca50ce712408442
+        SubnetIds:
+          - subnet-0381fea397aa99caa

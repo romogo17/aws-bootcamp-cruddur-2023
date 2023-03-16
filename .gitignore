@@ -17,3 +17,6 @@ terraform.rc
 
 ### Docker ###
 docker/**/*
+
+### AWS SAM ###
+**/.aws-sam

@@ -1,3 +1,14 @@
+data "aws_lambda_function" "post_confirmation_trigger" {
+  function_name = "PostUserConfirmationTrigger"
+}
+
+resource "aws_lambda_permission" "allow_cognito_trigger" {
+  statement_id  = "AllowExecutionFromCognito"
+  action        = "lambda:InvokeFunction"
+  function_name = data.aws_lambda_function.post_confirmation_trigger.function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.cruddur.arn
+}
 
 resource "aws_cognito_user_pool" "cruddur" {
   name = "cruddur-user-pool"
@@ -34,6 +45,10 @@ resource "aws_cognito_user_pool" "cruddur" {
       name     = "verified_email"
       priority = 1
     }
+  }
+
+  lambda_config {
+    post_confirmation = data.aws_lambda_function.post_confirmation_trigger.arn
   }
 
   schema {
