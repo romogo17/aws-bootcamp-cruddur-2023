@@ -69,11 +69,12 @@ services:
     ports:
       - 4318:4318 # OTLP http receiver
   db:
-    image: postgres:13-alpine
+    image: postgres:14-alpine
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=cruddur
     ports:
       - '5432:5432'
     volumes:
