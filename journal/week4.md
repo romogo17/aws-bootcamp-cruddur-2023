@@ -2,6 +2,7 @@
 
 - [Week 4 — Postgres and RDS](#week-4--postgres-and-rds)
   - [Required Homework](#required-homework)
+    - [Install Postgres Driver in Backend Application](#install-postgres-driver-in-backend-application)
     - [Create Congito Trigger to insert user into database](#create-congito-trigger-to-insert-user-into-database)
   - [Homework Challenges](#homework-challenges)
     - [Database design improvement](#database-design-improvement)
@@ -12,7 +13,12 @@
 > - I attended the Week 4 live stream, in which we created the RDS instance and a couple bash scripts
 > - Watched the Security Considerations video and did the respective quiz
 
+### Install Postgres Driver in Backend Application
+I watched and followed the video to connect the backend to both the container DB and the remote DB running in AWS
 
+As a result, I was able to remove the mock data from the Home Activities page and return results coming from the DB
+
+![](./assets/week4/fetch-activities-from-db.png)
 
 ### Create Congito Trigger to insert user into database
 
