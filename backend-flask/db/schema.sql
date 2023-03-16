@@ -19,7 +19,7 @@ CREATE TABLE public.activities (
   reposts_count integer DEFAULT 0,
   likes_count integer DEFAULT 0,
   reply_to_activity_uuid integer,
-  \l TIMESTAMP,
+  expires_at TIMESTAMP,
   created_at TIMESTAMP default current_timestamp NOT NULL,
   CONSTRAINT fk_user_uuid
       FOREIGN KEY(user_uuid)
