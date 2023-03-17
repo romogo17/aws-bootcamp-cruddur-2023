@@ -3,11 +3,13 @@ from datetime import datetime, timedelta, timezone
 
 from opentelemetry import trace
 
+from lib.db import db
+
 tracer = trace.get_tracer("create.activity")
 
 class CreateActivity:
   def run(message, user_handle, ttl):
-    with tracer.start_as_current_span("create-activity-mock-data"):
+    with tracer.start_as_current_span("create-activity-run"):
       model = {
         'errors': None,
         'data': None
@@ -46,14 +48,25 @@ class CreateActivity:
           'message': message
         }   
       else:
-        model['data'] = {
-          'uuid': uuid.uuid4(),
-          'display_name': 'Andrew Brown',
-          'handle':  user_handle,
-          'message': message,
-          'created_at': now.isoformat(),
-          'expires_at': (now + ttl_offset).isoformat()
-        }
-      span = trace.get_current_span()
-      span.set_attribute("app.user_handle", user_handle)
+        expires_at = (now + ttl_offset)
+        uuid = CreateActivity.create_activity(user_handle,message,expires_at)
+
+        object_json = CreateActivity.query_object_activity(uuid)
+        model['data'] = object_json
       return model
+
+
+  def create_activity(handle, message, expires_at):
+    sql = db.template('activities','create')
+    uuid = db.query_commit(sql,{
+      'handle': handle,
+      'message': message,
+      'expires_at': expires_at
+    })
+    return uuid
+
+  def query_object_activity(uuid):
+    sql = db.template('activities','object')
+    return db.query_object_json(sql,{
+      'uuid': uuid
+    })
