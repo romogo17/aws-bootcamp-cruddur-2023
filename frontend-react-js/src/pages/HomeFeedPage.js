@@ -19,8 +19,7 @@ export default function HomeFeedPage() {
 
   const loadData = async () => {
     try {
-      // const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
-      const backend_url = `${process.env.REACT_APP_ENVOY_URL}/api/activities/home`
+      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
       const res = await fetch(backend_url, {
         method: "GET",
         headers: {
@@ -70,6 +69,7 @@ export default function HomeFeedPage() {
       <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
       <div className='content'>
         <ActivityForm  
+          user={user}
           popped={popped}
           setPopped={setPopped} 
           setActivities={setActivities} 
