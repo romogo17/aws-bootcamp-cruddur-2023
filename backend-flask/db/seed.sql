@@ -1,8 +1,7 @@
 -- this file was manually created
 INSERT INTO public.users (display_name, email, handle, cognito_user_id)
 VALUES
-  ('Andrew Brown', 'andrew@exampro.co', 'andrewbrown' ,'MOCK'),
-  ('Roberto Mora', 'romogo17@gmail.com', 'romogo17' ,'MOCK');
+  ('Roberto Mora', 'romogo17@gmail.com', 'romogo17' ,'f6ca8bff-4cfa-466f-87bf-586ee222c10a');
 
 INSERT INTO public.activities (user_uuid, message, expires_at)
 VALUES
