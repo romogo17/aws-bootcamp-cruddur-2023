@@ -82,17 +82,17 @@ services:
       - '5432:5432'
     volumes:
       - db:/var/lib/postgresql/data
-  # dynamodb-local:
-  #   # https://stackoverflow.com/questions/67533058/persist-local-dynamodb-data-in-volumes-lack-permission-unable-to-open-databa
-  #   # We needed to add user:root to get this working.
-  #   user: root
-  #   command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-  #   image: "amazon/dynamodb-local:latest"
-  #   ports:
-  #     - "8000:8000"
-  #   volumes:
-  #     - "./docker/dynamodb:/home/dynamodblocal/data"
-  #   working_dir: /home/dynamodblocal
+  dynamodb-local:
+    # https://stackoverflow.com/questions/67533058/persist-local-dynamodb-data-in-volumes-lack-permission-unable-to-open-databa
+    # We needed to add user:root to get this working.
+    user: root
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    image: "amazon/dynamodb-local:latest"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ddb:/home/dynamodblocal/data
+    working_dir: /home/dynamodblocal
   xray-daemon:
     image: "amazon/aws-xray-daemon"
     environment:
@@ -107,6 +107,8 @@ services:
 
 volumes:
   db:
+    driver: local
+  ddb:
     driver: local
 
 # the name flag is a hack to change the default prepend folder
