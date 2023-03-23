@@ -21,38 +21,49 @@
 			]
 		}
 	},
-	// "postCreateCommand":[
-	// 	"cd $CODESPACE_VSCODE_FOLDER/frontend-react-js && npm i",
-	// 	"cd $CODESPACE_VSCODE_FOLDER/cognito-authz && npm i",
-	// 	"cd $CODESPACE_VSCODE_FOLDER/backend-flask && pip install -r requirements.txt"
-	// ],
+	"postCreateCommand": ".devcontainer/postcreate.sh",
+	"postAttachCommand": ".devcontainer/postattach.sh",
 	"remoteEnv": {
 		"AWS_CLI_AUTO_PROMPT": "on-partial"
 	},
+	"forwardPorts": [
+		3000,
+		4318,
+		4567,
+		8800
+	],
 	"portsAttributes": {
 		"3000": {
-			"label": "frontend"
+			"label": "frontend",
+			"onAutoForward": "openBrowser"
 		},
 		"4318": {
-			"label": "otel-collector"
+			"label": "otel-collector",
+			"onAutoForward": "silent"
 		},
 		"4567": {
-			"label": "backend"
+			"label": "backend",
+			"onAutoForward": "silent"
 		},
 		"5432": {
-			"label": "db"
+			"label": "db",
+			"onAutoForward": "silent"
 		},
 		"8000": {
-			"label": "ddb"
+			"label": "ddb",
+			"onAutoForward": "silent"
 		},
 		"8081": {
-			"label": "envoy-admin"
+			"label": "envoy-admin",
+			"onAutoForward": "silent"
 		},
 		"8123": {
-			"label": "authz"
+			"label": "authz",
+			"onAutoForward": "silent"
 		},
 		"8800": {
-			"label": "envoy"
+			"label": "envoy",
+			"onAutoForward": "silent"
 		}
 	}
 }

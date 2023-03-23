@@ -19,3 +19,6 @@ RUN TMP_DIR="$(mktemp -d)" \
     && cd "${TMP_DIR}" || exit 1 \
     && wget https://github.com/momentohq/momento-cli/releases/download/v0.36.0/momento-cli_0.36.0_amd64.deb \
     && sudo apt install "${TMP_DIR}/momento-cli_0.36.0_amd64.deb"
+
+# Use Node.js v16
+RUN nvm install v16
