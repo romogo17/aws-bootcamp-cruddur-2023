@@ -1,11 +1,10 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 {
 	"name": "Development Container",
-
-	"build": { "dockerfile": "Dockerfile" },
-
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -22,14 +21,38 @@
 			]
 		}
 	},
-
-	"postCreateCommand":[
-		"cd $CODESPACE_VSCODE_FOLDER/frontend-react-js && npm i",
-		"cd $CODESPACE_VSCODE_FOLDER/cognito-authz && npm i",
-		"cd $CODESPACE_VSCODE_FOLDER/backend-flask && pip install -r requirements.txt"
-	],
-
+	// "postCreateCommand":[
+	// 	"cd $CODESPACE_VSCODE_FOLDER/frontend-react-js && npm i",
+	// 	"cd $CODESPACE_VSCODE_FOLDER/cognito-authz && npm i",
+	// 	"cd $CODESPACE_VSCODE_FOLDER/backend-flask && pip install -r requirements.txt"
+	// ],
 	"remoteEnv": {
 		"AWS_CLI_AUTO_PROMPT": "on-partial"
+	},
+	"portsAttributes": {
+		"3000": {
+			"label": "frontend"
+		},
+		"4318": {
+			"label": "otel-collector"
+		},
+		"4567": {
+			"label": "backend"
+		},
+		"5432": {
+			"label": "db"
+		},
+		"8000": {
+			"label": "ddb"
+		},
+		"8081": {
+			"label": "envoy-admin"
+		},
+		"8123": {
+			"label": "authz"
+		},
+		"8800": {
+			"label": "envoy"
+		}
 	}
 }
