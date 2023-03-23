@@ -10,7 +10,7 @@ import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
-console.log(`Using OTEL Collector URL = ${process.env.REACT_APP_OTEL_COLLECTOR_URL}`)
+// console.log(`Using OTEL Collector URL = ${process.env.REACT_APP_OTEL_COLLECTOR_URL}`)
 
 const exporter = new OTLPTraceExporter({
     url: `${process.env.REACT_APP_OTEL_COLLECTOR_URL}/v1/traces`
