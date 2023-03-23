@@ -30,6 +30,25 @@ app.get("*", async (req, res, next) => {
   }
 });
 
+app.post("*", async (req, res, next) => {
+  try {
+    const authHeader = req.header("authorization")
+    let payload
+
+    if (authHeader && authHeader.split(' ')[0] === 'Bearer') {
+      payload = await jwtVerifier.verify(authHeader.split(' ')[1]);
+    } else {
+      payload = await jwtVerifier.verify(authHeader);
+    }
+
+    console.log("Token is valid. Payload: ", payload)
+    res.append('x-cognito-username', payload.username).json({Status: "Ok"});
+  } catch (err) {
+    console.error(err);
+    return res.status(403).json({ statusCode: 403, message: "Forbidden" });
+  }
+});
+
 // Hydrate the JWT verifier, then start express.
 // Hydrating the verifier makes sure the JWKS is loaded into the JWT verifier,
 // so it can verify JWTs immediately without any latency.
