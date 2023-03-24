@@ -117,12 +117,18 @@ def health():
 
 @app.route("/api/message_groups", methods=["GET"])
 def data_message_groups():
-    user_handle = "andrewbrown"
-    model = MessageGroups.run(user_handle=user_handle)
-    if model["errors"] is not None:
-        return model["errors"], 422
+    cognito_username = request.headers.get("X-Cognito-Username", None)
+    if cognito_username is not None:
+        # authenicatied request
+        app.logger.debug(f"authenticated request for user={cognito_username}")
+        model = MessageGroups.run(cognito_user_id=cognito_username)
+        if model["errors"] is not None:
+            return model["errors"], 422
+        else:
+            return model["data"], 200
     else:
-        return model["data"], 200
+        # unauthenicatied request
+        return {}, 401
 
 
 @app.route("/api/messages/@<string:handle>", methods=["GET"])
@@ -198,7 +204,7 @@ def data_search():
 @app.route("/api/activities", methods=["POST", "OPTIONS"])
 @cross_origin()
 def data_activities():
-    cognito_username = request.headers.get("X-Cognito-Username", None)
+    request.headers.get("X-Cognito-Username", None)
     user_handle = request.json["handle"]
     message = request.json["message"]
     ttl = request.json["ttl"]

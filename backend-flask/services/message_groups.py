@@ -1,30 +1,25 @@
-from datetime import datetime, timedelta, timezone
-
 from opentelemetry import trace
+from flask import current_app as app
+
+from lib.ddb import Ddb
+from lib.db import db
 
 tracer = trace.get_tracer("message.groups")
 
-class MessageGroups:
-  def run(user_handle):
-    with tracer.start_as_current_span("message-groups-mock-data"):
-      model = {
-        'errors': None,
-        'data': None
-      }
 
-      now = datetime.now(timezone.utc).astimezone()
-      results = [
-        {
-          'uuid': '24b95582-9e7b-4e0a-9ad1-639773ab7552',
-          'display_name': 'Andrew Brown',
-          'handle':  'andrewbrown',
-          'created_at': now.isoformat()
-        },
-        {
-          'uuid': '417c360e-c4e6-4fce-873b-d2d71469b4ac',
-          'display_name': 'Worf',
-          'handle':  'worf',
-          'created_at': now.isoformat()
-      }]
-      model['data'] = results
-      return model
+class MessageGroups:
+    def run(cognito_user_id):
+        with tracer.start_as_current_span("message-groups-run"):
+            model = {"errors": None, "data": None}
+
+            sql = db.template("users", "uuid_from_cognito_user_id")
+            my_user_uuid = db.query_value(sql, {"cognito_user_id": cognito_user_id})
+
+            app.logger.info(f"UUID: {my_user_uuid}")
+
+            ddb = Ddb.client()
+            data = Ddb.list_message_groups(ddb, my_user_uuid)
+            app.logger.info(f"list_message_groups: {data}")
+
+            model["data"] = data
+            return model
