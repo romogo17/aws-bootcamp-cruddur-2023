@@ -150,18 +150,38 @@ def data_messages(message_group_uuid):
 @app.route("/api/messages", methods=["POST", "OPTIONS"])
 @cross_origin()
 def data_create_message():
-    user_sender_handle = "andrewbrown"
-    user_receiver_handle = request.json["user_receiver_handle"]
+    cognito_username = request.headers.get("X-Cognito-Username", None)
     message = request.json["message"]
+    user_receiver_handle = request.json.get("handle", None)
+    message_group_uuid = request.json.get("message_group_uuid", None)
+    if cognito_username is not None:
+        # authenicatied request
+        app.logger.debug(f"data_create_message: authenticated request for user={cognito_username}")
 
-    model = CreateMessage.run(
-        message=message, user_sender_handle=user_sender_handle, user_receiver_handle=user_receiver_handle
-    )
-    if model["errors"] is not None:
-        return model["errors"], 422
+        if message_group_uuid is None:
+            # Create for the first time
+            model = CreateMessage.run(
+                mode="create",
+                message=message,
+                cognito_user_id=cognito_username,
+                user_receiver_handle=user_receiver_handle,
+            )
+        else:
+            # Push onto existing Message Group
+            model = CreateMessage.run(
+                mode="update",
+                message=message,
+                cognito_user_id=cognito_username,
+                message_group_uuid=message_group_uuid,
+            )
+
+        if model["errors"] is not None:
+            return model["errors"], 422
+        else:
+            return model["data"], 200
     else:
-        return model["data"], 200
-    return
+        # unauthenicatied request
+        return {}, 401
 
 
 @app.route("/api/activities/home", methods=["GET"])
