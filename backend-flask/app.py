@@ -120,7 +120,7 @@ def data_message_groups():
     cognito_username = request.headers.get("X-Cognito-Username", None)
     if cognito_username is not None:
         # authenicatied request
-        app.logger.debug(f"authenticated request for user={cognito_username}")
+        app.logger.debug(f"data_message_groups: authenticated request for user={cognito_username}")
         model = MessageGroups.run(cognito_user_id=cognito_username)
         if model["errors"] is not None:
             return model["errors"], 422
@@ -131,17 +131,20 @@ def data_message_groups():
         return {}, 401
 
 
-@app.route("/api/messages/@<string:handle>", methods=["GET"])
-def data_messages(handle):
-    user_sender_handle = "andrewbrown"
-    user_receiver_handle = request.args.get("user_reciever_handle")
-
-    model = Messages.run(user_sender_handle=user_sender_handle, user_receiver_handle=user_receiver_handle)
-    if model["errors"] is not None:
-        return model["errors"], 422
+@app.route("/api/messages/<string:message_group_uuid>", methods=["GET"])
+def data_messages(message_group_uuid):
+    cognito_username = request.headers.get("X-Cognito-Username", None)
+    if cognito_username is not None:
+        # authenicatied request
+        app.logger.debug(f"data_messages: authenticated request for user={cognito_username}")
+        model = Messages.run(cognito_user_id=cognito_username, message_group_uuid=message_group_uuid)
+        if model["errors"] is not None:
+            return model["errors"], 422
+        else:
+            return model["data"], 200
     else:
-        return model["data"], 200
-    return
+        # unauthenicatied request
+        return {}, 401
 
 
 @app.route("/api/messages", methods=["POST", "OPTIONS"])
@@ -167,7 +170,7 @@ def data_home():
     cognito_username = request.headers.get("X-Cognito-Username", None)
     if cognito_username is not None:
         # authenicatied request
-        app.logger.debug(f"authenticated request for user={cognito_username}")
+        app.logger.debug(f"data_home: authenticated request for user={cognito_username}")
         data = HomeActivities.run(cognito_user_id=cognito_username)
     else:
         # unauthenicatied request

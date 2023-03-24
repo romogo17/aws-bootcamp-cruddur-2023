@@ -24,14 +24,14 @@ export default function MessageGroupItem(props) {
 
   const classes = () => {
     let classes = ["message_group_item"];
-    if (params.handle == props.message_group.handle){
+    if (params.message_group_uuid == props.message_group.uuid){
       classes.push('active')
     }
     return classes.join(' ');
   }
 
   return (
-    <Link className={classes()} to={`/messages/@`+props.message_group.handle}>
+    <Link className={classes()} to={`/messages/`+props.message_group.uuid}>
       <div className='message_group_avatar'></div>
       <div className='message_content'>
         <div classsName='message_group_meta'>
@@ -42,7 +42,7 @@ export default function MessageGroupItem(props) {
         </div>{/* message_meta */}
         <div className="message">{props.message_group.message}</div>
         <div className="created_at" title={props.message_group.created_at}>
-          <span className='ago'>{format_time_created_at(props.message_group.created_at)}</span> 
+          <span className='ago'>{format_time_created_at(props.message_group.created_at)}</span>
         </div>{/* created_at */}
       </div>{/* message_content */}
     </Link>

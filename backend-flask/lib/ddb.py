@@ -4,14 +4,13 @@ import uuid
 import os
 import botocore.exceptions
 
-boto3.set_stream_logger("botocore", level="DEBUG")
+# boto3.set_stream_logger("botocore", level="DEBUG")
 
 
 class Ddb:
     def client():
         endpoint_url = os.getenv("AWS_ENDPOINT_URL")
         attrs = {} if endpoint_url is None else {"endpoint_url": endpoint_url}
-        print(f"attrs={attrs} ===============", flush=True)
         return boto3.client("dynamodb", **attrs)
 
     def list_message_groups(client, my_user_uuid):
@@ -24,8 +23,6 @@ class Ddb:
             "Limit": 20,
             "ExpressionAttributeValues": {":year": {"S": year}, ":pk": {"S": f"GRP#{my_user_uuid}"}},
         }
-        print(f"client={client}", flush=True)
-        print(f"my_user_uuid={my_user_uuid}", flush=True)
         response = client.query(**query_params)
         items = response["Items"]
 
