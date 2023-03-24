@@ -6,7 +6,7 @@ import datetime
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--prod", default=False)
+parser.add_argument("--prod", default=False, action="store_true")
 args = parser.parse_args()
 attrs = {} if args.prod is True else {"endpoint_url": "http://localhost:8000"}
 
