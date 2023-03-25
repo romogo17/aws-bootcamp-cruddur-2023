@@ -36,3 +36,17 @@ Resources:
           - sg-07ca50ce712408442
         SubnetIds:
           - subnet-0381fea397aa99caa
+
+  MessageStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: MessageStream
+      CodeUri: functions/message_stream/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: cruddur-messages
+        - DynamoDBStreamReadPolicy:
+            TableName: cruddur-messages
+            StreamName: "*"
