@@ -58,7 +58,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -X GET http://localhost:4567/health -H 'Accept: application/json' -H 'Content-Type: application/json'"
+          "curl -X GET http://localhost:4567/api/health-check -H 'Accept: application/json' -H 'Content-Type: application/json'"
         ]
       interval: 60s
       timeout: 10s
