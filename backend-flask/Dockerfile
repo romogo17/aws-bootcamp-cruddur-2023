@@ -1,4 +1,4 @@
-FROM python:3.10-slim-buster
+FROM 921979471021.dkr.ecr.us-east-1.amazonaws.com/cruddur-python:3.10-slim-buster
 LABEL org.opencontainers.image.authors="Roberto.Mora@experian.com"
 LABEL org.opencontainers.image.source="https://github.com/romogo17/aws-bootcamp-cruddur-2023.git"
 
