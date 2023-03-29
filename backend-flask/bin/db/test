@@ -12,10 +12,10 @@ connection_url = os.getenv("REMOTE_DB_CONNECTION_URL") if args.prod is True else
 
 conn = None
 try:
-  print('attempting connection')
-  conn = psycopg.connect(connection_url)
-  print("Connection successful!")
+    print("Attempting connection...")
+    conn = psycopg.connect(connection_url)
+    print("Connection successful!")
 except psycopg.Error as e:
-  print("Unable to connect to the database:", e)
+    print("Unable to connect to the database:", e)
 finally:
-  conn.close()
+    conn.close()
