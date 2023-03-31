@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from aws_xray_sdk.core import xray_recorder
+# from aws_xray_sdk.core import xray_recorder
 
 from opentelemetry import trace
 
@@ -20,7 +20,7 @@ class UserActivities:
 
       now = datetime.now(timezone.utc).astimezone()
 
-      if user_handle == None or len(user_handle) < 1:
+      if user_handle is None or len(user_handle) < 1:
         model['errors'] = ['blank_user_handle']
       else:
         now = datetime.now()
