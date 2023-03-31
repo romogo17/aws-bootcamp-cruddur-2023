@@ -14,3 +14,28 @@ variable "gitpod_cidr_block" {
   description = "IPv4 CIDR block of Gitpod"
   type        = string
 }
+
+variable "db_connection_url" {
+  description = "Database connection URL"
+  type        = string
+}
+
+variable "rollbar_access_token" {
+  description = "Rollbar access token"
+  type        = string
+}
+
+variable "honeycomb_api_key" {
+  description = "Honeycomb api key"
+  type        = string
+}
+
+variable "cognito_user_pool_id" {
+  description = "Cognito user pool id"
+  type        = string
+}
+
+variable "cognito_user_pool_client_id" {
+  description = "Cognito user pool client id"
+  type        = string
+}

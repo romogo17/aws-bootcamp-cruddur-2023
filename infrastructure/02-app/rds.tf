@@ -15,25 +15,20 @@ resource "aws_db_instance" "cruddur" {
   multi_az                     = false
   performance_insights_enabled = false
   deletion_protection          = false
+  vpc_security_group_ids       = [aws_security_group.rds.id]
 }
 
 
-resource "aws_default_security_group" "default" {
-  vpc_id = data.aws_vpc.default.id
+resource "aws_security_group" "rds" {
+  name        = "cruddur-rds-sg"
+  description = "Security group for Cruddur RDS DB"
+  vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    protocol    = -1
-    self        = true
-    from_port   = 0
-    to_port     = 0
-    description = ""
-  }
-
-  ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = [var.gitpod_cidr_block]
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.cruddur_ecs_sg.id]
   }
 
   egress {
@@ -44,6 +39,21 @@ resource "aws_default_security_group" "default" {
   }
 }
 
-data "aws_vpc" "default" {
-  default = true
+
+resource "aws_default_security_group" "default" {
+  vpc_id = data.aws_vpc.default.id
+
+  ingress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }

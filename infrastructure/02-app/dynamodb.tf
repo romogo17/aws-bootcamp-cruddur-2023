@@ -1,5 +1,3 @@
-data "aws_region" "current" {}
-
 resource "aws_dynamodb_table" "cruddur_messages_table" {
   name           = "cruddur-messages"
   billing_mode   = "PROVISIONED"
