@@ -26,21 +26,30 @@ resource "aws_security_group" "alb_sg" {
   description = "Security group for Cruddur LBs"
   vpc_id      = data.aws_vpc.default.id
 
+  # TODO: remove - backend calls should go through envoy
   ingress {
-    description = "HTTP"
-    from_port   = 80
-    to_port     = 80
+    description = "cruddur-backend-flask"
+    from_port   = 4567
+    to_port     = 4567
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
+    description = "cruddur-backend-envoy"
+    from_port   = 8800
+    to_port     = 8800
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  # ingress {
+  #   description = "HTTPS"
+  #   from_port   = 443
+  #   to_port     = 443
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   egress {
     from_port   = 0
@@ -55,11 +64,12 @@ resource "aws_security_group" "cruddur_ecs_sg" {
   description = "Security group for Cruddur services on ECS"
   vpc_id      = data.aws_vpc.default.id
 
+  # TODO: this should only allow the ports needed
   ingress {
-    description     = "Cruddur Backend"
-    from_port       = 4567
-    to_port         = 4567
-    protocol        = "tcp"
+    description     = "cruddur-alb"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
     security_groups = [aws_security_group.alb_sg.id]
   }
 
@@ -102,7 +112,7 @@ resource "aws_lb_target_group" "cruddur_backend_tg" {
 
 resource "aws_lb_listener" "cruddur_backend_listener" {
   load_balancer_arn = aws_lb.cruddur_backend_lb.arn
-  port              = 80
+  port              = 4567
   protocol          = "HTTP"
 
   default_action {
@@ -168,8 +178,8 @@ resource "aws_ecs_task_definition" "backend_flask" {
   execution_role_arn       = aws_iam_role.service.arn
   task_role_arn            = aws_iam_role.task.arn
   network_mode             = "awsvpc"
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = "512"
+  memory                   = "1024"
   requires_compatibilities = ["FARGATE"]
 
   container_definitions = jsonencode([
