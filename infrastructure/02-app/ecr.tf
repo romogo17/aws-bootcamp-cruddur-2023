@@ -1,7 +1,10 @@
 locals {
   ecr_repo_names = [
     "cruddur-python",
-    "backend-flask"
+    "backend-flask",
+    "frontend-react-js",
+    "envoy",
+    "cognito-authz"
   ]
 }
 
