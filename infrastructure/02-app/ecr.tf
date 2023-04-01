@@ -4,7 +4,8 @@ locals {
     "backend-flask",
     "frontend-react-js",
     "envoy",
-    "cognito-authz"
+    "authz",
+    "otel-collector"
   ]
 }
 
