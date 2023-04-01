@@ -39,3 +39,8 @@ variable "cognito_user_pool_client_id" {
   description = "Cognito user pool client id"
   type        = string
 }
+
+variable "ecs_service_desired_count" {
+  description = "Desired count for the ECS services"
+  type        = string
+}

@@ -26,14 +26,14 @@ resource "aws_security_group" "alb_sg" {
   description = "Security group for Cruddur LBs"
   vpc_id      = data.aws_vpc.default.id
 
-  # TODO: remove - backend calls should go through envoy
-  ingress {
-    description = "cruddur-backend-flask"
-    from_port   = 4567
-    to_port     = 4567
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # Not needed - Backend calls should go through envoy
+  # ingress {
+  #   description = "cruddur-backend-flask"
+  #   from_port   = 4567
+  #   to_port     = 4567
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   ingress {
     description = "cruddur-backend-envoy"
@@ -73,6 +73,15 @@ resource "aws_security_group" "cruddur_ecs_sg" {
     security_groups = [aws_security_group.alb_sg.id]
   }
 
+  # Use only for direct task access (for debugging purposes)
+  # ingress {
+  #   description = "allow-ingress-to-tasks"
+  #   from_port   = 0
+  #   to_port     = 0
+  #   protocol    = "-1"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
+
   ingress {
     from_port = 0
     to_port   = 0
@@ -97,6 +106,19 @@ resource "aws_lb" "cruddur_backend_lb" {
   enable_deletion_protection = false
 }
 
+# TODO: This listener is not needed as calls should go through the proxy
+resource "aws_lb_listener" "cruddur_backend_listener" {
+  load_balancer_arn = aws_lb.cruddur_backend_lb.arn
+  port              = 4567
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.cruddur_backend_tg.arn
+  }
+}
+
+# TODO: This target group is not needed as calls should go through the proxy
 resource "aws_lb_target_group" "cruddur_backend_tg" {
   name        = "cruddur-backend-tg"
   port        = 4567
@@ -110,16 +132,30 @@ resource "aws_lb_target_group" "cruddur_backend_tg" {
   }
 }
 
-resource "aws_lb_listener" "cruddur_backend_listener" {
+resource "aws_lb_listener" "cruddur_backend_envoy_listener" {
   load_balancer_arn = aws_lb.cruddur_backend_lb.arn
-  port              = 4567
+  port              = 8800
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.cruddur_backend_tg.arn
+    target_group_arn = aws_lb_target_group.cruddur_backend_envoy_tg.arn
   }
 }
+
+resource "aws_lb_target_group" "cruddur_backend_envoy_tg" {
+  name        = "cruddur-backend-envoy-tg"
+  port        = 8800
+  protocol    = "HTTP"
+  vpc_id      = data.aws_vpc.default.id
+  target_type = "ip"
+
+  health_check {
+    path     = "/api/health-check"
+    protocol = "HTTP"
+  }
+}
+
 
 # *****************************************************************************
 # * ECS Cluster and Services
@@ -140,7 +176,7 @@ resource "aws_ecs_service" "backend_flask" {
   name                   = "backend-flask"
   cluster                = aws_ecs_cluster.cruddur.id
   task_definition        = aws_ecs_task_definition.backend_flask.arn
-  desired_count          = 1
+  desired_count          = var.ecs_service_desired_count
   enable_execute_command = true
   launch_type            = "FARGATE"
 
@@ -160,12 +196,52 @@ resource "aws_ecs_service" "backend_flask" {
       discovery_name = "backend-flask"
       port_name      = "backend-flask"
     }
+    service {
+      client_alias {
+        port = 8800
+      }
+      discovery_name = "envoy"
+      port_name      = "envoy"
+    }
   }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.cruddur_backend_tg.arn
     container_name   = "backend-flask"
     container_port   = 4567
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.cruddur_backend_envoy_tg.arn
+    container_name   = "envoy"
+    container_port   = 8800
+  }
+}
+
+resource "aws_ecs_service" "backend_authz" {
+  name                   = "backend-authz"
+  cluster                = aws_ecs_cluster.cruddur.id
+  task_definition        = aws_ecs_task_definition.backend_authz.arn
+  desired_count          = var.ecs_service_desired_count
+  enable_execute_command = true
+  launch_type            = "FARGATE"
+
+  network_configuration {
+    subnets          = data.aws_subnets.default.ids
+    security_groups  = [aws_security_group.cruddur_ecs_sg.id]
+    assign_public_ip = true
+  }
+
+  service_connect_configuration {
+    enabled   = true
+    namespace = aws_service_discovery_http_namespace.cruddur.arn
+    service {
+      client_alias {
+        port = 8123
+      }
+      discovery_name = "authz"
+      port_name      = "authz"
+    }
   }
 }
 
@@ -196,7 +272,7 @@ resource "aws_ecs_task_definition" "backend_flask" {
         timeout     = 5
         retries     = 3
         startPeriod = 60
-      },
+      }
       portMappings = [{
         name          = "backend-flask"
         containerPort = 4567
@@ -226,19 +302,81 @@ resource "aws_ecs_task_definition" "backend_flask" {
         { name = "AWS_COGNITO_USER_POOL_CLIENT_ID", valueFrom = aws_ssm_parameter.secret["AWS_COGNITO_USER_POOL_CLIENT_ID"].arn },
       ]
     },
-    # {
-    #   name      = "second"
-    #   image     = "service-second"
-    #   cpu       = 10
-    #   memory    = 256
-    #   essential = true
-    #   portMappings = [
-    #     {
-    #       containerPort = 443
-    #       hostPort      = 443
-    #     }
-    #   ]
-    # }
+    {
+      name      = "envoy"
+      image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/envoy:dns-family-v4"
+      essential = true
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "curl -s http://localhost:8001/server_info | grep state | grep -q LIVE"
+        ],
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
+      portMappings = [{
+        name          = "envoy"
+        containerPort = 8800
+        protocol      = "tcp"
+        appProtocol   = "http"
+      }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.cruddur.name
+          "awslogs-region"        = data.aws_region.current.name
+          "awslogs-stream-prefix" = "envoy"
+        }
+      }
+    }
+  ])
+}
+
+resource "aws_ecs_task_definition" "backend_authz" {
+  family                   = "backend-authz"
+  execution_role_arn       = aws_iam_role.service.arn
+  task_role_arn            = aws_iam_role.task.arn
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  requires_compatibilities = ["FARGATE"]
+
+  container_definitions = jsonencode([
+    {
+      name      = "authz"
+      image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/authz"
+      essential = true
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "curl -s http://localhost:8123/health-check | grep status | grep -q ok"
+        ],
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
+      portMappings = [{
+        name          = "authz"
+        containerPort = 8123
+        protocol      = "tcp"
+        appProtocol   = "http"
+      }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.cruddur.name
+          "awslogs-region"        = data.aws_region.current.name
+          "awslogs-stream-prefix" = "authz"
+        }
+      }
+      secrets = [
+        { name = "AWS_COGNITO_USER_POOL_ID", valueFrom = aws_ssm_parameter.secret["AWS_COGNITO_USER_POOL_ID"].arn },
+        { name = "AWS_COGNITO_USER_POOL_CLIENT_ID", valueFrom = aws_ssm_parameter.secret["AWS_COGNITO_USER_POOL_CLIENT_ID"].arn },
+      ]
+    }
   ])
 }
 
