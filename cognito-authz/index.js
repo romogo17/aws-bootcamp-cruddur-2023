@@ -11,9 +11,14 @@ const jwtVerifier = CognitoJwtVerifier.create({
   tokenUse: "access",
 });
 
-app.get("*", async (req, res, next) => {
+app.get('/health-check', (req, res) => {
+  res.status(200).send({ "status": "ok" });
+});
+
+app.get("/api/*", async (req, res, next) => {
   try {
     const authHeader = req.header("authorization")
+    console.log(`[GET] Handling authz for ${req.originalUrl} with authorization header ${authHeader}`)
     let payload
 
     if (authHeader && authHeader.split(' ')[0] === 'Bearer') {
@@ -30,9 +35,10 @@ app.get("*", async (req, res, next) => {
   }
 });
 
-app.post("*", async (req, res, next) => {
+app.post("/api/*", async (req, res, next) => {
   try {
     const authHeader = req.header("authorization")
+    console.log(`[POST] Handling authz for ${req.originalUrl} with authorization header ${authHeader}`)
     let payload
 
     if (authHeader && authHeader.split(' ')[0] === 'Bearer') {
@@ -61,6 +67,6 @@ jwtVerifier
   })
   .then(() =>
     app.listen(port, () => {
-      console.log(`Example app listening at http://localhost:${port}`);
+      console.log(`Authz app listening at http://localhost:${port}`);
     })
   );
