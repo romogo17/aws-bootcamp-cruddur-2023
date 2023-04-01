@@ -28,7 +28,7 @@ static_resources:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
                       http_service:
                         server_uri:
-                          uri: authz:8123
+                          uri: authz.cruddur:8123
                           cluster: authz
                           timeout: 5s
                         authorization_response:
@@ -43,6 +43,7 @@ static_resources:
       connect_timeout: 5s
       type: STRICT_DNS
       lb_policy: ROUND_ROBIN
+      dns_lookup_family: V4_ONLY
       load_assignment:
         cluster_name: backend-flask
         endpoints:
@@ -50,12 +51,13 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: backend-flask
+                      address: backend-flask.cruddur
                       port_value: 4567
     - name: authz
       connect_timeout: 5s
       type: STRICT_DNS
       lb_policy: ROUND_ROBIN
+      dns_lookup_family: V4_ONLY
       load_assignment:
         cluster_name: backend-flask
         endpoints:
@@ -63,7 +65,7 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: authz
+                      address: authz.cruddur
                       port_value: 8123
 admin:
   access_log_path: "/dev/null"
