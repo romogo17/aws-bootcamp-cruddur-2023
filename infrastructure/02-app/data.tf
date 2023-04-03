@@ -12,3 +12,7 @@ data "aws_subnets" "default" {
     values = [data.aws_vpc.default.id]
   }
 }
+
+data "aws_route53_zone" "cruddur_route53_zone" {
+  name = var.cruddur_dns_name
+}

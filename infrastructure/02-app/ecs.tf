@@ -26,30 +26,21 @@ resource "aws_security_group" "alb_sg" {
   description = "Security group for Cruddur LBs"
   vpc_id      = data.aws_vpc.default.id
 
-  # Not needed - Backend calls should go through envoy
-  # ingress {
-  #   description = "cruddur-backend-flask"
-  #   from_port   = 4567
-  #   to_port     = 4567
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-
   ingress {
-    description = "cruddur-backend-envoy"
-    from_port   = 8800
-    to_port     = 8800
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # ingress {
-  #   description = "HTTPS"
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
+  ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   egress {
     from_port   = 0
@@ -64,7 +55,6 @@ resource "aws_security_group" "cruddur_ecs_sg" {
   description = "Security group for Cruddur services on ECS"
   vpc_id      = data.aws_vpc.default.id
 
-  # TODO: this should only allow the ports needed
   ingress {
     description     = "cruddur-alb"
     from_port       = 0
@@ -106,40 +96,47 @@ resource "aws_lb" "cruddur_backend_lb" {
   enable_deletion_protection = false
 }
 
-# TODO: This listener is not needed as calls should go through the proxy
-resource "aws_lb_listener" "cruddur_backend_listener" {
+resource "aws_lb_listener" "main" {
   load_balancer_arn = aws_lb.cruddur_backend_lb.arn
-  port              = 4567
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+  certificate_arn   = aws_acm_certificate_validation.cruddur.certificate_arn
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.cruddur_backend_tg.arn
+    target_group_arn = aws_lb_target_group.frontend_react_js_tg.arn
   }
 }
 
-# TODO: This target group is not needed as calls should go through the proxy
-resource "aws_lb_target_group" "cruddur_backend_tg" {
-  name        = "cruddur-backend-tg"
-  port        = 4567
-  protocol    = "HTTP"
-  vpc_id      = data.aws_vpc.default.id
-  target_type = "ip"
+resource "aws_lb_listener_rule" "api" {
+  listener_arn = aws_lb_listener.main.arn
+  priority     = 100
 
-  health_check {
-    path     = "/api/health-check"
-    protocol = "HTTP"
-  }
-}
-
-resource "aws_lb_listener" "cruddur_backend_envoy_listener" {
-  load_balancer_arn = aws_lb.cruddur_backend_lb.arn
-  port              = 8800
-  protocol          = "HTTP"
-
-  default_action {
+  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.cruddur_backend_envoy_tg.arn
+  }
+
+  condition {
+    host_header {
+      values = ["api.${var.cruddur_dns_name}"]
+    }
+  }
+}
+
+resource "aws_lb_listener" "http_to_https" {
+  load_balancer_arn = aws_lb.cruddur_backend_lb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 }
 
@@ -152,6 +149,19 @@ resource "aws_lb_target_group" "cruddur_backend_envoy_tg" {
 
   health_check {
     path     = "/api/health-check"
+    protocol = "HTTP"
+  }
+}
+
+resource "aws_lb_target_group" "frontend_react_js_tg" {
+  name        = "frontend-react-js-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = data.aws_vpc.default.id
+  target_type = "ip"
+
+  health_check {
+    path     = "/"
     protocol = "HTTP"
   }
 }
@@ -205,11 +215,12 @@ resource "aws_ecs_service" "backend_flask" {
     }
   }
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.cruddur_backend_tg.arn
-    container_name   = "backend-flask"
-    container_port   = 4567
-  }
+  # Not needed - Backend calls should go through envoy
+  # load_balancer {
+  #   target_group_arn = aws_lb_target_group.cruddur_backend_tg.arn
+  #   container_name   = "backend-flask"
+  #   container_port   = 4567
+  # }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.cruddur_backend_envoy_tg.arn
@@ -242,6 +253,39 @@ resource "aws_ecs_service" "backend_authz" {
       discovery_name = "authz"
       port_name      = "authz"
     }
+  }
+}
+
+resource "aws_ecs_service" "frontend_react_js" {
+  name                   = "frontend-react-js"
+  cluster                = aws_ecs_cluster.cruddur.id
+  task_definition        = aws_ecs_task_definition.frontend_react_js.arn
+  desired_count          = var.ecs_service_desired_count
+  enable_execute_command = true
+  launch_type            = "FARGATE"
+
+  network_configuration {
+    subnets          = data.aws_subnets.default.ids
+    security_groups  = [aws_security_group.cruddur_ecs_sg.id]
+    assign_public_ip = true
+  }
+
+  service_connect_configuration {
+    enabled   = true
+    namespace = aws_service_discovery_http_namespace.cruddur.arn
+    service {
+      client_alias {
+        port = 8123
+      }
+      discovery_name = "frontend-react-js"
+      port_name      = "frontend-react-js"
+    }
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.frontend_react_js_tg.arn
+    container_name   = "frontend-react-js"
+    container_port   = 80
   }
 }
 
@@ -290,8 +334,8 @@ resource "aws_ecs_task_definition" "backend_flask" {
       environment = [
         { name = "OTEL_SERVICE_NAME", value = "cruddur-backend-flask" },
         { name = "OTEL_EXPORTER_OTLP_ENDPOINT", value = "https://api.honeycomb.io" },
-        { name = "FRONTEND_URL", value = "*" },
-        { name = "BACKEND_URL", value = "*" },
+        { name = "FRONTEND_URL", value = "https://${var.cruddur_dns_name}" },
+        { name = "BACKEND_URL", value = "https://api.${var.cruddur_dns_name}" },
         { name = "AWS_DEFAULT_REGION", value = data.aws_region.current.name }
       ]
       secrets = [
@@ -375,6 +419,57 @@ resource "aws_ecs_task_definition" "backend_authz" {
       secrets = [
         { name = "AWS_COGNITO_USER_POOL_ID", valueFrom = aws_ssm_parameter.secret["AWS_COGNITO_USER_POOL_ID"].arn },
         { name = "AWS_COGNITO_USER_POOL_CLIENT_ID", valueFrom = aws_ssm_parameter.secret["AWS_COGNITO_USER_POOL_CLIENT_ID"].arn },
+      ]
+    }
+  ])
+}
+
+resource "aws_ecs_task_definition" "frontend_react_js" {
+  family                   = "frontend-react-js"
+  execution_role_arn       = aws_iam_role.service.arn
+  task_role_arn            = aws_iam_role.task.arn
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  requires_compatibilities = ["FARGATE"]
+
+  container_definitions = jsonencode([
+    {
+      name      = "frontend-react-js"
+      image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/frontend-react-js"
+      essential = true
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "curl -f http://localhost:80 || exit 1"
+        ],
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
+      portMappings = [{
+        name          = "frontend-react-js"
+        containerPort = 80
+        protocol      = "tcp"
+        appProtocol   = "http"
+      }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.cruddur.name
+          "awslogs-region"        = data.aws_region.current.name
+          "awslogs-stream-prefix" = "frontend-react-js"
+        }
+      }
+      environment = [
+        { name = "REACT_APP_BACKEND_URL", value = "http://${aws_lb.cruddur_backend_lb.dns_name}:8800" },
+        { name = "REACT_APP_AWS_PROJECT_REGION", value = data.aws_region.current.name },
+        { name = "REACT_APP_AWS_COGNITO_REGION", value = data.aws_region.current.name }
+      ]
+      secrets = [
+        { name = "REACT_APP_AWS_USER_POOLS_ID", valueFrom = aws_ssm_parameter.secret["AWS_COGNITO_USER_POOL_ID"].arn },
+        { name = "REACT_APP_AWS_USER_POOLS_WEB_CLIENT_ID", valueFrom = aws_ssm_parameter.secret["AWS_COGNITO_USER_POOL_CLIENT_ID"].arn },
       ]
     }
   ])

@@ -44,3 +44,8 @@ variable "ecs_service_desired_count" {
   description = "Desired count for the ECS services"
   type        = string
 }
+
+variable "cruddur_dns_name" {
+  type        = string
+  description = "Name of the Route53 zone"
+}
