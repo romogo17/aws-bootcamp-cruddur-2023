@@ -9,11 +9,11 @@ source $PROJECT_PATH/.env
 set +a
 
 docker build \
-    -t $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/frontend-react-js
-    -f $PROJECT_PATH/frontend-react-js/Dockerfile.prod
-    --build-arg BACKEND_URL="https://api.$CRUDDUR_DNS_NAME"
-    --build-arg AWS_USER_POOLS_ID=$AWS_COGNITO_USER_POOL_ID
-    --build-arg AWS_USER_POOLS_WEB_CLIENT_ID=$AWS_COGNITO_USER_POOL_CLIENT_ID
+    -t $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/frontend-react-js \
+    -f $PROJECT_PATH/frontend-react-js/Dockerfile.prod \
+    --build-arg BACKEND_URL="https://api.$CRUDDUR_DNS_NAME" \
+    --build-arg AWS_USER_POOLS_ID=$AWS_COGNITO_USER_POOL_ID \
+    --build-arg AWS_USER_POOLS_WEB_CLIENT_ID=$AWS_COGNITO_USER_POOL_CLIENT_ID \
     $PROJECT_PATH/frontend-react-js
 
 docker push $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/frontend-react-js
