@@ -310,7 +310,7 @@ resource "aws_ecs_task_definition" "backend_flask" {
       healthCheck = {
         command = [
           "CMD-SHELL",
-          "python /backend-flask/bin/flask/health-check"
+          "python /backend-flask/bin/health-check"
         ],
         interval    = 30
         timeout     = 5
