@@ -462,15 +462,6 @@ resource "aws_ecs_task_definition" "frontend_react_js" {
           "awslogs-stream-prefix" = "frontend-react-js"
         }
       }
-      environment = [
-        { name = "REACT_APP_BACKEND_URL", value = "http://${aws_lb.cruddur_backend_lb.dns_name}:8800" },
-        { name = "REACT_APP_AWS_PROJECT_REGION", value = data.aws_region.current.name },
-        { name = "REACT_APP_AWS_COGNITO_REGION", value = data.aws_region.current.name }
-      ]
-      secrets = [
-        { name = "REACT_APP_AWS_USER_POOLS_ID", valueFrom = aws_ssm_parameter.secret["AWS_COGNITO_USER_POOL_ID"].arn },
-        { name = "REACT_APP_AWS_USER_POOLS_WEB_CLIENT_ID", valueFrom = aws_ssm_parameter.secret["AWS_COGNITO_USER_POOL_CLIENT_ID"].arn },
-      ]
     }
   ])
 }
