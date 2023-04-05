@@ -6,7 +6,9 @@ NO_COLOR='\033[0m'
 LABEL="db-setup"
 printf "${CYAN}==== ${LABEL} ====${NO_COLOR}\n"
 
-bin_path="$(realpath .)/bin"
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH=$(dirname $(dirname $(dirname $ABS_PATH)))
+bin_path="$PROJECT_PATH/bin"
 
 source "$bin_path/db/drop"
 source "$bin_path/db/create"

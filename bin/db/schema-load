@@ -5,7 +5,10 @@ NO_COLOR='\033[0m'
 LABEL="db-schema-load"
 printf "${CYAN}=== ${LABEL}${NO_COLOR}\n"
 
-schema_path="$(realpath .)/db/schema.sql"
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH=$(dirname $(dirname $(dirname $ABS_PATH)))
+schema_path="$PROJECT_PATH/backend-flask/db/schema.sql"
 # echo $schema_path
 
 if [ "$1" = "prod" ]; then

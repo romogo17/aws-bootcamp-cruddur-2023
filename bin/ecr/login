@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH=$(dirname $(dirname $(dirname $ABS_PATH)))
+
+# Load (and export) certain environment variables
+set -a
+source $PROJECT_PATH/.env
+set +a
+
+aws ecr get-login-password | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"

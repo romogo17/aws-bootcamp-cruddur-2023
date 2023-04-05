@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH=$(dirname $(dirname $(dirname $ABS_PATH)))
+
+# Load (and export) certain environment variables
+set -a
+source $PROJECT_PATH/.env
+set +a
+
+docker build \
+    -t $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/envoy \
+    --build-arg CONFIG_FILE=envoy.prod.yaml \
+    $PROJECT_PATH/envoy
+
+
+
+
+docker push $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/envoy
