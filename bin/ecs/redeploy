@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+ABS_PATH=$(readlink -f "$0")
+PROJECT_PATH=$(dirname $(dirname $(dirname $ABS_PATH)))
+
+# Load (and export) certain environment variables
+set -a
+source $PROJECT_PATH/.env
+set +a
+
+if [ -z "$1" ]; then
+  echo "No SERVICE_NAME argument supplied eg ./bin/ecs/redeploy backend-flask"
+  exit 1
+fi
+SERVICE_NAME=$1
+
+aws ecs update-service \
+    --cluster cruddur \
+    --service $SERVICE_NAME \
+    --force-new-deployment
