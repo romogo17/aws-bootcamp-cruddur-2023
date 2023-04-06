@@ -1,0 +1,8 @@
+FROM otel/opentelemetry-collector
+LABEL org.opencontainers.image.authors="Roberto.Mora@experian.com"
+LABEL org.opencontainers.image.source="https://github.com/romogo17/aws-bootcamp-cruddur-2023.git"
+
+COPY otel-collector-config.yaml /etc/otel-collector-config.yaml
+EXPOSE 4318
+EXPOSE 13133
+CMD ["--config=/etc/otel-collector-config.yaml"]

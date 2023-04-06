@@ -10,11 +10,15 @@ receivers:
 
 processors:
   batch:
+
 exporters:
   otlp/honeycomb:
     endpoint: "api.honeycomb.io:443"
     headers:
       "x-honeycomb-team": ${env:HONEYCOMB_API_KEY}
+
+extensions:
+  health_check:
 
 service:
   pipelines:
@@ -22,3 +26,5 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [otlp/honeycomb]
+
+  extensions: [health_check]

@@ -8,6 +8,7 @@ locals {
     OTEL_EXPORTER_OTLP_HEADERS      = "x-honeycomb-team=${var.honeycomb_api_key}"
     AWS_COGNITO_USER_POOL_ID        = var.cognito_user_pool_id
     AWS_COGNITO_USER_POOL_CLIENT_ID = var.cognito_user_pool_client_id
+    HONEYCOMB_API_KEY               = var.honeycomb_api_key
   }
 }
 
@@ -124,6 +125,22 @@ resource "aws_lb_listener_rule" "api" {
   }
 }
 
+resource "aws_lb_listener_rule" "otel_collector" {
+  listener_arn = aws_lb_listener.main.arn
+  priority     = 200
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.otel_collector_tg.arn
+  }
+
+  condition {
+    host_header {
+      values = ["otel-collector.${var.cruddur_dns_name}"]
+    }
+  }
+}
+
 resource "aws_lb_listener" "http_to_https" {
   load_balancer_arn = aws_lb.cruddur_backend_lb.arn
   port              = 80
@@ -163,6 +180,20 @@ resource "aws_lb_target_group" "frontend_react_js_tg" {
   health_check {
     path     = "/"
     protocol = "HTTP"
+  }
+}
+
+resource "aws_lb_target_group" "otel_collector_tg" {
+  name        = "otel-collector-tg"
+  port        = 4318
+  protocol    = "HTTP"
+  vpc_id      = data.aws_vpc.default.id
+  target_type = "ip"
+
+  health_check {
+    path     = "/"
+    protocol = "HTTP"
+    port     = 13133
   }
 }
 
@@ -273,7 +304,7 @@ resource "aws_ecs_service" "frontend_react_js" {
     namespace = aws_service_discovery_http_namespace.cruddur.arn
     service {
       client_alias {
-        port = 8123
+        port = 80
       }
       discovery_name = "frontend-react-js"
       port_name      = "frontend-react-js"
@@ -284,6 +315,39 @@ resource "aws_ecs_service" "frontend_react_js" {
     target_group_arn = aws_lb_target_group.frontend_react_js_tg.arn
     container_name   = "frontend-react-js"
     container_port   = 80
+  }
+}
+
+resource "aws_ecs_service" "otel_collector" {
+  name                   = "otel-collector"
+  cluster                = aws_ecs_cluster.cruddur.id
+  task_definition        = aws_ecs_task_definition.otel_collector.arn
+  desired_count          = var.ecs_service_desired_count
+  enable_execute_command = true
+  launch_type            = "FARGATE"
+
+  network_configuration {
+    subnets          = data.aws_subnets.default.ids
+    security_groups  = [aws_security_group.cruddur_ecs_sg.id]
+    assign_public_ip = true
+  }
+
+  service_connect_configuration {
+    enabled   = true
+    namespace = aws_service_discovery_http_namespace.cruddur.arn
+    service {
+      client_alias {
+        port = 4318
+      }
+      discovery_name = "otel-collector"
+      port_name      = "otel-collector"
+    }
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.otel_collector_tg.arn
+    container_name   = "otel-collector"
+    container_port   = 4318
   }
 }
 
@@ -479,6 +543,53 @@ resource "aws_ecs_task_definition" "frontend_react_js" {
           "awslogs-stream-prefix" = "frontend-react-js"
         }
       }
+    }
+  ])
+}
+
+resource "aws_ecs_task_definition" "otel_collector" {
+  family                   = "otel-collector"
+  execution_role_arn       = aws_iam_role.service.arn
+  task_role_arn            = aws_iam_role.task.arn
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  requires_compatibilities = ["FARGATE"]
+
+  container_definitions = jsonencode([
+    {
+      name      = "otel-collector"
+      image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/otel-collector"
+      essential = true
+      portMappings = [
+        {
+          name          = "otel-collector"
+          containerPort = 4318
+          protocol      = "tcp"
+          appProtocol   = "http"
+        },
+        {
+          name          = "otel-collector-health-check"
+          containerPort = 13133
+          protocol      = "tcp"
+          appProtocol   = "http"
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.cruddur.name
+          "awslogs-region"        = data.aws_region.current.name
+          "awslogs-stream-prefix" = "otel-collector"
+        }
+      }
+      environment = [
+        { name = "HTTP_FRONTEND_URL", value = "http://${var.cruddur_dns_name}" },
+        { name = "HTTPS_FRONTEND_URL", value = "https://${var.cruddur_dns_name}" },
+      ]
+      secrets = [
+        { name = "HONEYCOMB_API_KEY", valueFrom = aws_ssm_parameter.secret["HONEYCOMB_API_KEY"].arn }
+      ]
     }
   ])
 }

@@ -59,3 +59,15 @@ resource "aws_route53_record" "api" {
     evaluate_target_health = true
   }
 }
+
+resource "aws_route53_record" "otel_collector" {
+  zone_id = data.aws_route53_zone.cruddur_route53_zone.zone_id
+  name    = "otel-collector.${var.cruddur_dns_name}"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.cruddur_backend_lb.dns_name
+    zone_id                = aws_lb.cruddur_backend_lb.zone_id
+    evaluate_target_health = true
+  }
+}
