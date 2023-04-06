@@ -180,6 +180,11 @@ resource "aws_ecs_cluster" "cruddur" {
   service_connect_defaults {
     namespace = aws_service_discovery_http_namespace.cruddur.arn
   }
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
 }
 
 resource "aws_ecs_service" "backend_flask" {
@@ -214,13 +219,6 @@ resource "aws_ecs_service" "backend_flask" {
       port_name      = "envoy"
     }
   }
-
-  # Not needed - Backend calls should go through envoy
-  # load_balancer {
-  #   target_group_arn = aws_lb_target_group.cruddur_backend_tg.arn
-  #   container_name   = "backend-flask"
-  #   container_port   = 4567
-  # }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.cruddur_backend_envoy_tg.arn
@@ -372,6 +370,25 @@ resource "aws_ecs_task_definition" "backend_flask" {
           "awslogs-group"         = aws_cloudwatch_log_group.cruddur.name
           "awslogs-region"        = data.aws_region.current.name
           "awslogs-stream-prefix" = "envoy"
+        }
+      }
+    },
+    {
+      name      = "xray"
+      image     = "public.ecr.aws/xray/aws-xray-daemon"
+      essential = true
+      user      = "1337"
+      portMappings = [{
+        name          = "xray"
+        containerPort = 2000
+        protocol      = "udp"
+      }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.cruddur.name
+          "awslogs-region"        = data.aws_region.current.name
+          "awslogs-stream-prefix" = "xray"
         }
       }
     }
