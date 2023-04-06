@@ -1,5 +1,5 @@
 import boto3
-from datetime import datetime, timezone
+from datetime import datetime
 import uuid
 import os
 import botocore.exceptions
@@ -69,8 +69,7 @@ class Ddb:
         return results
 
     def create_message(client, message_group_uuid, message, my_user_uuid, my_user_display_name, my_user_handle):
-        now = datetime.now(timezone.utc).astimezone().isoformat()
-        created_at = now
+        created_at = datetime.now().isoformat()
         message_uuid = str(uuid.uuid4())
 
         record = {
@@ -111,7 +110,7 @@ class Ddb:
 
         message_group_uuid = str(uuid.uuid4())
         message_uuid = str(uuid.uuid4())
-        now = datetime.now(timezone.utc).astimezone().isoformat()
+        now = datetime.now().isoformat()
         last_message_at = now
         created_at = now
         print("== create_message_group.2")
